@@ -8,106 +8,115 @@
     <style>
         :root {
             --fts-red: #E62411;
+            --fts-dark: #333333;
             --bg-color: #ffffff;
             --text-color: #333333;
         }
 
         body { 
-            margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: var(--bg-color); color: var(--text-color);
             display: flex; flex-direction: column; align-items: center; 
-            justify-content: flex-start; 
             min-height: 100vh;
-            padding: 60px 20px; 
         }
 
-        /* --- SIDEBAR --- */
+        header {
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+        }
+
+        #menuBtn {
+            font-size: 30px; 
+            background: #f0f0f0; 
+            border: 1px solid #ddd; 
+            padding: 5px 12px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            color: var(--fts-red);
+        }
+
         #sideMenu {
             height: 100%; width: 0; position: fixed; z-index: 9999;
             top: 0; left: 0; background-color: var(--fts-red);
-            overflow-x: hidden; transition: 0.4s; padding-top: 60px;
+            overflow-x: hidden; transition: 0.3s; padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
         }
         
         #sideMenu a {
-            padding: 18px 25px; text-decoration: none; font-size: 18px; 
+            padding: 15px 25px; text-decoration: none; font-size: 18px; 
             color: white !important; display: block; font-weight: bold;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .menu-label {
-            color: rgba(255,255,255,0.6);
-            font-size: 12px;
-            padding: 20px 25px 5px 25px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7); font-size: 11px;
+            padding: 20px 25px 5px 25px; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: bold;
         }
 
-        #menuBtn {
-            position: fixed; top: 15px; left: 15px; font-size: 28px; 
-            background: white; border: 1px solid #ddd; padding: 5px 15px; 
-            border-radius: 8px; cursor: pointer; z-index: 1001; color: var(--fts-red);
-        }
+        .logo { max-width: 220px; margin: 20px 0; }
 
-        /* --- LOGO --- */
-        .logo { max-width: 250px; margin-bottom: 30px; }
+        .container { width: 90%; max-width: 400px; text-align: center; }
 
-        /* --- ACTION CARD --- */
-        .container { width: 100%; max-width: 400px; }
         .check-card {
-            background: #f8f8f8;
+            background: #f9f9f9;
             border-top: 8px solid var(--fts-red);
             border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            text-align: center;
-            gap: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
         }
-        .check-card h2 { margin: 0; font-size: 24px; color: var(--fts-red); }
-        .check-card p { margin: 0; color: #666; font-size: 16px; line-height: 1.5; }
+
+        /* Styling for the second card */
+        .timesheet-card {
+            border-top: 8px solid var(--fts-dark);
+        }
+
+        .status-badge {
+            font-size: 12px; font-weight: bold; color: #28a745;
+            background: #e8f5e9; padding: 5px 12px; border-radius: 20px;
+            margin-bottom: 10px; display: inline-block;
+        }
+
+        .payroll-badge {
+            color: #1976d2;
+            background: #e3f2fd;
+        }
 
         .btn {
-            background: var(--fts-red);
-            color: white;
-            text-align: center;
-            padding: 20px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 18px;
-            margin-top: 15px;
-            text-transform: uppercase;
-            display: block;
+            background: var(--fts-red); color: white;
+            text-align: center; padding: 18px; border-radius: 10px;
+            text-decoration: none; font-weight: bold; font-size: 18px;
+            display: block; margin-top: 15px;
         }
-        
-        .status-badge {
-            font-size: 14px;
-            font-weight: bold;
-            color: #28a745;
-            background: #e8f5e9;
-            padding: 6px 15px; border-radius: 20px;
-            display: inline-block; margin: 0 auto;
+
+        .btn-dark {
+            background: var(--fts-dark);
         }
     </style>
 </head>
 <body>
 
-    <div id="menuBtn" onclick="openNav()">☰</div>
+    <header>
+        <div id="menuBtn" onclick="openNav()">☰</div>
+    </header>
 
     <div id="sideMenu">
-        <a href="#" onclick="closeNav()">🏠 Home</a>
+        <a href="javascript:void(0)" onclick="closeNav()" style="font-size: 24px; text-align: right; border: none;">× Close</a>
+        <a href="#" onclick="closeNav()">Home</a>
         
-        <div class="menu-label">Support & Contacts</div>
-        <a href="tel:07701238561">📞 David Jayes</a>
-        <a href="tel:01949480130">🏢 Office</a>
-        <a href="tel:07806609199">🚨 JCC Recovery</a>
-        <a href="tel:01785413500">🛞 Lodge Tyres</a>
-
-        <div class="menu-label">Links</div>
-        <a href="https://www.frosttransportsolutions.co.uk/" target="_blank">Company Website</a>
-        
-        <div onclick="closeNav()" style="padding: 30px 25px; color: white; cursor: pointer; text-decoration: underline;">✕ Close Menu</div>
+        <div class="menu-label">Support</div>
+        <a href="tel:07701238561">David Jayes</a>
+        <a href="tel:01949480130">Office</a>
+        <a href="tel:07806609199">JCC Recovery</a>
+        <a href="tel:01785413500">Lodge Tyres</a>
     </div>
 
     <img src="logo.png" class="logo" alt="Frost Haulage">
@@ -115,15 +124,27 @@
     <div class="container">
         <div class="check-card">
             <div class="status-badge">DVSA COMPLIANT</div>
-            <h2>Daily Vehicle Check</h2>
-            <p>Please complete your vehicle safety check before starting your journey.</p>
+            <h2 style="margin:0; color:#E62411;">Daily Vehicle Check</h2>
+            <p style="color:#666;">Safety check required before journey.</p>
             <a href="https://forms.gle/f8FUy2U54c5Eof5TA" class="btn">Start Check</a>
+        </div>
+
+        <div class="check-card timesheet-card">
+            <div class="status-badge payroll-badge">PAYROLL</div>
+            <h2 style="margin:0; color:#333333;">Driver Timesheet</h2>
+            <p style="color:#666;">Log your shift hours and breaks daily.</p>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSd_Ke11hqTTCzr9vdLfJCqitmRejct-sn2MQxtqhvi7B5xa0g/viewform?usp=pp_url&entry.717090179=Richard+Robinson" class="btn btn-dark">Log Hours</a>
         </div>
     </div>
 
     <script>
-        function openNav() { document.getElementById("sideMenu").style.width = "280px"; }
-        function closeNav() { document.getElementById("sideMenu").style.width = "0"; }
+        function openNav() {
+            document.getElementById("sideMenu").style.width = "280px";
+        }
+
+        function closeNav() {
+            document.getElementById("sideMenu").style.width = "0";
+        }
     </script>
 
 </body>
