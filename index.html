@@ -16,7 +16,8 @@
             margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
             background: var(--bg-color); color: var(--text-color);
             display: flex; flex-direction: column; align-items: center; 
-            padding: 80px 0 40px 0; 
+            justify-content: center; min-height: 100vh;
+            padding: 20px;
         }
 
         /* --- SIDEBAR --- */
@@ -40,52 +41,54 @@
 
         /* --- LOGO --- */
         .logo { 
-            max-width: 220px; 
-            margin-bottom: 30px; 
-            display: block;
+            max-width: 250px; 
+            margin-bottom: 40px; 
         }
 
-        /* --- ACTION CARDS --- */
-        .container { width: 90%; max-width: 450px; }
+        /* --- ACTION CARD --- */
+        .container { width: 100%; max-width: 400px; }
 
         .check-card {
             background: #f8f8f8;
-            border-left: 6px solid var(--fts-red);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 8px solid var(--fts-red);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            text-align: center;
+            gap: 15px;
         }
 
-        .check-card h2 { margin: 0; font-size: 20px; color: var(--fts-red); }
-        .check-card p { margin: 0; color: #666; font-size: 14px; line-height: 1.4; }
+        .check-card h2 { margin: 0; font-size: 24px; color: var(--fts-red); }
+        .check-card p { margin: 0; color: #666; font-size: 16px; line-height: 1.5; }
 
         .btn {
             background: var(--fts-red);
             color: white;
             text-align: center;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             text-decoration: none;
             font-weight: bold;
-            margin-top: 10px;
+            font-size: 18px;
+            margin-top: 15px;
             text-transform: uppercase;
             display: block;
+            transition: transform 0.2s;
         }
-
-        .btn-secondary { background: #333; }
+        
+        .btn:active { transform: scale(0.95); }
 
         .status-badge {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             color: #28a745;
             background: #e8f5e9;
-            padding: 4px 8px;
-            border-radius: 4px;
-            align-self: flex-start;
+            padding: 6px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -102,31 +105,17 @@
     <img src="logo.png" class="logo" alt="Frost Haulage">
 
     <div class="container">
-        
         <div class="check-card">
-            <div class="status-badge">REQUIRED DAILY</div>
-            <h2>Daily Walkaround Check</h2>
-            <p>Complete your vehicle safety inspection before starting your journey.</p>
+            <div class="status-badge">DVSA COMPLIANT</div>
+            <h2>Daily Walkaround</h2>
+            <p>Please complete your vehicle safety check before starting your shift.</p>
             <a href="https://forms.gle/f8FUy2U54c5Eof5TA" class="btn">Start Check</a>
         </div>
-
-        <div class="check-card">
-            <div class="status-badge" style="background:#fff3e0; color:#ef6c00;">URGENT</div>
-            <h2>Report a Defect</h2>
-            <p>Use this for immediate reporting of any vehicle or trailer faults found.</p>
-            <a href="https://forms.gle/f8FUy2U54c5Eof5TA" class="btn btn-secondary">Report Fault</a>
-        </div>
-
     </div>
 
     <script>
-        function openNav() {
-            document.getElementById("sideMenu").style.width = "280px";
-        }
-
-        function closeNav() {
-            document.getElementById("sideMenu").style.width = "0";
-        }
+        function openNav() { document.getElementById("sideMenu").style.width = "280px"; }
+        function closeNav() { document.getElementById("sideMenu").style.width = "0"; }
     </script>
 
 </body>
