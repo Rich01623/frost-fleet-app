@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Frost Fleet Compliance</title>
+    
+    <style>
+        :root {
+            --fts-red: #E62411;
+            --bg-color: #ffffff;
+            --text-color: #333333;
+        }
+
+        body { 
+            margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center; 
+            padding: 80px 0 40px 0; 
+        }
+
+        /* --- SIDEBAR --- */
+        #sideMenu {
+            height: 100%; width: 0; position: fixed; z-index: 9999;
+            top: 0; left: 0; background-color: var(--fts-red);
+            overflow-x: hidden; transition: 0.4s; padding-top: 60px;
+        }
+        
+        #sideMenu a {
+            padding: 18px 25px; text-decoration: none; font-size: 18px; 
+            color: white !important; display: block; font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #menuBtn {
+            position: fixed; top: 15px; left: 15px; font-size: 28px; 
+            background: white; border: 1px solid #ddd; padding: 5px 15px; 
+            border-radius: 8px; cursor: pointer; z-index: 1001; color: var(--fts-red);
+        }
+
+        /* --- LOGO --- */
+        .logo { 
+            max-width: 220px; 
+            margin-bottom: 30px; 
+            display: block;
+        }
+
+        /* --- ACTION CARDS --- */
+        .container { width: 90%; max-width: 450px; }
+
+        .check-card {
+            background: #f8f8f8;
+            border-left: 6px solid var(--fts-red);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .check-card h2 { margin: 0; font-size: 20px; color: var(--fts-red); }
+        .check-card p { margin: 0; color: #666; font-size: 14px; line-height: 1.4; }
+
+        .btn {
+            background: var(--fts-red);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 10px;
+            text-transform: uppercase;
+            display: block;
+        }
+
+        .btn-secondary { background: #333; }
+
+        .status-badge {
+            font-size: 12px;
+            font-weight: bold;
+            color: #28a745;
+            background: #e8f5e9;
+            padding: 4px 8px;
+            border-radius: 4px;
+            align-self: flex-start;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="menuBtn" onclick="openNav()">☰</div>
+
+    <div id="sideMenu">
+        <a href="#" onclick="closeNav()">🏠 Home</a>
+        <a href="https://www.frosttransportsolutions.co.uk/" target="_blank">Company Website</a>
+        <div onclick="closeNav()" style="padding: 30px 25px; color: white; cursor: pointer; text-decoration: underline;">✕ Close Menu</div>
+    </div>
+
+    <img src="logo.png" class="logo" alt="Frost Haulage">
+
+    <div class="container">
+        
+        <div class="check-card">
+            <div class="status-badge">REQUIRED DAILY</div>
+            <h2>Daily Walkaround Check</h2>
+            <p>Complete your vehicle safety inspection before starting your journey.</p>
+            <a href="https://forms.gle/f8FUy2U54c5Eof5TA" class="btn">Start Check</a>
+        </div>
+
+        <div class="check-card">
+            <div class="status-badge" style="background:#fff3e0; color:#ef6c00;">URGENT</div>
+            <h2>Report a Defect</h2>
+            <p>Use this for immediate reporting of any vehicle or trailer faults found.</p>
+            <a href="https://forms.gle/f8FUy2U54c5Eof5TA" class="btn btn-secondary">Report Fault</a>
+        </div>
+
+    </div>
+
+    <script>
+        function openNav() {
+            document.getElementById("sideMenu").style.width = "280px";
+        }
+
+        function closeNav() {
+            document.getElementById("sideMenu").style.width = "0";
+        }
+    </script>
+
+</body>
+</html>
