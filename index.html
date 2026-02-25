@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Frost Fleet Compliance</title>
-    
     <style>
         :root { --fts-red: #E62411; --fts-dark: #333333; --bg-color: #ffffff; }
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -21,12 +20,8 @@
         .welcome-text { font-size: 18px; font-weight: bold; color: var(--fts-dark); margin-bottom: 20px; text-transform: capitalize; }
         .container { width: 92%; max-width: 400px; text-align: center; }
         .check-card { background: #f9f9f9; border-top: 8px solid var(--fts-red); border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: left; }
-        .timesheet-card { border-top: 8px solid var(--fts-dark); }
-        .trailer-card { border-top: 8px solid #555555; }
         .status-badge { font-size: 11px; font-weight: bold; color: #28a745; background: #e8f5e9; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px; display: inline-block; }
         .btn { background: var(--fts-red); color: white; text-align: center; padding: 16px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 17px; display: block; margin-top: 15px; border: none; cursor: pointer; }
-        .btn-dark { background: var(--fts-dark); }
-        .btn-grey { background: #555555; }
     </style>
 </head>
 <body>
@@ -35,20 +30,18 @@
         <img src="logo.png" class="logo" alt="Frost Haulage">
         <div class="login-box">
             <h3 style="color: var(--fts-red);">Fleet Access</h3>
-            <input type="text" id="username" placeholder="Username">
+            <input type="text" id="username" placeholder="Full Name (e.g. Andy Carter)">
             <input type="password" id="password" placeholder="Password">
             <button onclick="checkLogin()">Login</button>
-            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 10px;">Incorrect details.</p>
+            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 10px;">Login failed. Check spelling/password.</p>
         </div>
     </div>
 
     <div id="appContent">
         <header><div id="menuBtn" onclick="openNav()">☰</div></header>
-
         <div id="sideMenu">
             <a href="#" onclick="closeNav()">Home</a>
             <a href="tel:07701238561">David Jayes</a>
-            <a href="tel:01949480130">Office</a>
             <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer; margin-top: 30px; display: block; padding: 10px 20px;">Log Out</a>
             <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-decoration: underline;">✕ Close</div>
         </div>
@@ -63,61 +56,46 @@
                 <a href="https://forms.gle/f8FUy2U54c5Eof5TA" class="btn">Start Check</a>
             </div>
 
-            <div class="check-card trailer-card">
+            <div class="check-card" style="border-top-color: #555;">
                 <div class="status-badge">FLEET MGMT</div>
-                <h2 style="margin:0; color:#333333; font-size: 20px;">FTS Trailer Selection</h2>
-                <a href="https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform" id="trailerLink" class="btn btn-grey">Log Trailer</a>
+                <h2 style="margin:0; color:#333; font-size: 20px;">FTS Trailer Selection</h2>
+                <a href="#" id="trailerLink" class="btn" style="background:#555;">Log Trailer</a>
             </div>
 
-            <div class="check-card timesheet-card">
+            <div class="check-card" style="border-top-color: #333;">
                 <div class="status-badge">PAYROLL</div>
-                <h2 style="margin:0; color:#333333; font-size: 20px;">Driver Timesheet</h2>
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSd_Ke11hqTTCzr9vdLfJCqitmRejct-sn2MQxtqhvi7B5xa0g/viewform?usp=pp_url&entry.717090179=Richard+Robinson" class="btn btn-dark">Log Hours</a>
+                <h2 style="margin:0; color:#333; font-size: 20px;">Driver Timesheet</h2>
+                <a href="#" id="timesheetLink" class="btn" style="background:#333;">Log Hours</a>
             </div>
         </div>
     </div>
 
     <script>
         const validUsers = {
-            "andy carter": "ac26",
-            "andy west": "aw26",
-            "barrie ashmore": "ba26",
-            "chris frost": "cf26
-            "callum lee": "ca26",
-            "dean young": "dy26",
-            "ian bason": "ib26",
-            "jan zackl": "jz26",
-            "john hulbert": "jh26",
-            "josh harrison": "jh26",
-            "lee woodcock": "lw26",
-            "marc wickham": "mw26",
-            "michael moss": "mm26",
-            "neil woods": "nw26",
-            "rhys hill": "rh26",
-            "ricardo morais": "rm26",
-            "richard dickens": "rd26",
-            "richard robinson": "rr26",
-            "richard spence": "rs26",
-            "roy taylor": "rt26",
-            "stuart sleigh": "ss26",
-            "thomas broomhead": "tb26",
-            "marco chung": "mc26"
+            "frost": "Haulage2026", "richard": "Frost2026", "david": "Fleet2026", "office": "Admin2026",
+            "andy carter": "ac26", "andy west": "aw26", "barrie ashmore": "ba26", "callum lee": "ca26",
+            "dean young": "dy26", "ian bason": "ib26", "jan zackl": "jz26", "john hulbert": "jh26",
+            "josh harrison": "jh26", "lee woodcock": "lw26", "marc wickham": "mw26", "michael moss": "mm26",
+            "neil woods": "nw26", "rhys hill": "rh26", "ricardo morais": "rm26", "richard dickens": "rd26",
+            "richard robinson": "rr26", "richard spence": "rs26", "roy taylor": "rt26", "stuart sleigh": "ss26",
+            "thomas broomhead": "tb26", "marco chung": "mc26"
         };
 
         window.onload = function() {
-            if (localStorage.getItem("frostLoggedIn") === "true") {
-                showDashboard(localStorage.getItem("frostUserName") || "Driver");
+            const savedUser = localStorage.getItem("frostUserName");
+            if (localStorage.getItem("frostLoggedIn") === "true" && savedUser) {
+                showDashboard(savedUser);
             }
         };
 
         function checkLogin() {
-            const userInput = document.getElementById('username').value.toLowerCase().trim();
-            const passInput = document.getElementById('password').value;
+            const user = document.getElementById('username').value.toLowerCase().trim();
+            const pass = document.getElementById('password').value.trim();
             
-            if (validUsers[userInput] && validUsers[userInput] === passInput) {
+            if (validUsers[user] && validUsers[user] === pass) {
                 localStorage.setItem("frostLoggedIn", "true");
-                localStorage.setItem("frostUserName", userInput);
-                showDashboard(userInput);
+                localStorage.setItem("frostUserName", user);
+                showDashboard(user);
             } else {
                 document.getElementById('errorMsg').style.display = "block";
             }
@@ -130,16 +108,16 @@
             document.getElementById('appContent').style.alignItems = "center";
             document.getElementById('welcomeUser').innerText = "Welcome, " + name;
 
-            const trailerBase = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform"; 
-            const entryID = "entry.2036897075"; 
-            document.getElementById('trailerLink').href = trailerBase + "?" + entryID + "=" + encodeURIComponent(name);
+            // Trailer Form
+            const trailerUrl = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform";
+            document.getElementById('trailerLink').href = trailerUrl + "?entry.2036897075=" + encodeURIComponent(name);
+            
+            // Timesheet Form (Pre-fills name for everyone now)
+            const sheetUrl = "https://docs.google.com/forms/d/e/1FAIpQLSd_Ke11hqTTCzr9vdLfJCqitmRejct-sn2MQxtqhvi7B5xa0g/viewform";
+            document.getElementById('timesheetLink').href = sheetUrl + "?usp=pp_url&entry.717090179=" + encodeURIComponent(name);
         }
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
-        }
-
+        function logout() { localStorage.clear(); location.reload(); }
         function openNav() { document.getElementById("sideMenu").style.width = "260px"; }
         function closeNav() { document.getElementById("sideMenu").style.width = "0"; }
     </script>
