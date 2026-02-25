@@ -14,8 +14,12 @@
         body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 70px; }
         header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 0; background: white; z-index: 100; }
         #menuBtn { font-size: 26px; background: white; border: 1px solid #ddd; padding: 4px 12px; border-radius: 8px; color: var(--fts-red); cursor: pointer; }
+        
         #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 50px; }
-        #sideMenu a { padding: 10px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        #sideMenu a, .menu-item { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .gate-code { background: rgba(0,0,0,0.2); color: #fff; font-size: 17px; letter-spacing: 1px; }
+        .menu-label { color: rgba(255,255,255,0.6); font-size: 11px; padding: 15px 20px 5px; text-transform: uppercase; }
+
         .logo { max-width: 180px; margin: 5px 0 15px 0; }
         .welcome-text { font-size: 18px; font-weight: bold; color: var(--fts-dark); margin-bottom: 20px; text-transform: capitalize; }
         .container { width: 92%; max-width: 400px; text-align: center; }
@@ -30,20 +34,25 @@
         <img src="logo.png" class="logo" alt="Frost Haulage">
         <div class="login-box">
             <h3 style="color: var(--fts-red);">Fleet Access</h3>
-            <input type="text" id="username" placeholder="Full Name (e.g. Andy Carter)">
+            <input type="text" id="username" placeholder="Full Name">
             <input type="password" id="password" placeholder="Password">
             <button onclick="checkLogin()">Login</button>
-            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 10px;">Login failed. Check spelling/password.</p>
+            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 10px;">Login failed.</p>
         </div>
     </div>
 
     <div id="appContent">
         <header><div id="menuBtn" onclick="openNav()">☰</div></header>
+        
         <div id="sideMenu">
-            <a href="#" onclick="closeNav()">Home</a>
+            <div class="menu-label">Security</div>
+            <div class="menu-item gate-code">Gate Code: <b>3684</b></div>
+            <div class="menu-label">Support</div>
             <a href="tel:07701238561">David Jayes</a>
-            <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer; margin-top: 30px; display: block; padding: 10px 20px;">Log Out</a>
-            <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-decoration: underline;">✕ Close</div>
+            <a href="tel:01949480130">Office</a>
+            <div class="menu-label">Account</div>
+            <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer;">Log Out</a>
+            <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center; font-size: 13px;">✕ Close Menu</div>
         </div>
 
         <img src="logo.png" class="logo" alt="Frost Haulage">
@@ -74,47 +83,64 @@
         const validUsers = {
             "frost": "Haulage2026", "richard": "Frost2026", "david": "Fleet2026", "office": "Admin2026",
             "andy carter": "ac26", "andy west": "aw26", "barrie ashmore": "ba26", "callum lee": "ca26",
-            "dean young": "dy26", "ian bason": "ib26", "jan zackl": "jz26", "jon hulbert": "jh26",
+            "dean young": "dy26", "ian bason": "ib26", "jan zackl": "jz26", "john hulbert": "jh26",
             "josh harrison": "jh26", "lee woodcock": "lw26", "marc wickham": "mw26", "michael moss": "mm26",
             "neil woods": "nw26", "rhys hill": "rh26", "ricardo morais": "rm26", "richard dickens": "rd26",
             "richard robinson": "rr26", "richard spence": "rs26", "roy taylor": "rt26", "stuart sleigh": "ss26",
-            "thomas broomhead": "tb26", "marco chung": "mc26", "chris frost": "cf26"
+            "thomas broomhead": "tb26", "marco chung": "mc26"
         };
 
         window.onload = function() {
             const savedUser = localStorage.getItem("frostUserName");
             if (localStorage.getItem("frostLoggedIn") === "true" && savedUser) {
-                showDashboard(savedUser);
+                requestLocationAndShow(savedUser);
             }
         };
 
         function checkLogin() {
             const user = document.getElementById('username').value.toLowerCase().trim();
             const pass = document.getElementById('password').value.trim();
-            
             if (validUsers[user] && validUsers[user] === pass) {
                 localStorage.setItem("frostLoggedIn", "true");
                 localStorage.setItem("frostUserName", user);
-                showDashboard(user);
+                requestLocationAndShow(user);
             } else {
                 document.getElementById('errorMsg').style.display = "block";
             }
         }
 
-        function showDashboard(name) {
+        function requestLocationAndShow(name) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const loc = position.coords.latitude + "," + position.coords.longitude;
+                        showDashboard(name, loc);
+                    },
+                    () => { showDashboard(name, "Location Denied"); },
+                    { enableHighAccuracy: true, timeout: 5000 }
+                );
+            } else {
+                showDashboard(name, "Not Supported");
+            }
+        }
+
+        function showDashboard(name, loc) {
             document.getElementById('loginOverlay').style.display = "none";
             document.getElementById('appContent').style.display = "flex";
             document.getElementById('appContent').style.flexDirection = "column";
             document.getElementById('appContent').style.alignItems = "center";
             document.getElementById('welcomeUser').innerText = "Welcome, " + name;
 
-            // Trailer Form
+            // Trailer Link
             const trailerUrl = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform";
             document.getElementById('trailerLink').href = trailerUrl + "?entry.2036897075=" + encodeURIComponent(name);
             
-            // Timesheet Form (Pre-fills name for everyone now)
+            // Timesheet Link with Name & Location
             const sheetUrl = "https://docs.google.com/forms/d/e/1FAIpQLSd_Ke11hqTTCzr9vdLfJCqitmRejct-sn2MQxtqhvi7B5xa0g/viewform";
-            document.getElementById('timesheetLink').href = sheetUrl + "?usp=pp_url&entry.717090179=" + encodeURIComponent(name);
+            const nameID = "entry.717090179";
+            const locID = "entry.1431143784";
+            
+            document.getElementById('timesheetLink').href = `${sheetUrl}?usp=pp_url&${nameID}=${encodeURIComponent(name)}&${locID}=${encodeURIComponent(loc)}`;
         }
 
         function logout() { localStorage.clear(); location.reload(); }
@@ -123,4 +149,3 @@
     </script>
 </body>
 </html>
-
