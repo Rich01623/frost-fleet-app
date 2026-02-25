@@ -6,61 +6,27 @@
     <title>Frost Fleet Compliance</title>
     
     <style>
-        :root {
-            --fts-red: #E62411;
-            --fts-dark: #333333;
-            --bg-color: #ffffff;
-        }
-
-        /* --- LOGIN SCREEN --- */
-        #loginOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 10000; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-        }
+        :root { --fts-red: #E62411; --fts-dark: #333333; --bg-color: #ffffff; }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-box { width: 85%; max-width: 320px; text-align: center; }
-        .login-box input {
-            width: 100%; padding: 15px; margin: 10px 0;
-            border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px;
-        }
-        .login-box button {
-            width: 100%; padding: 15px; background: var(--fts-red);
-            color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px;
-        }
-
-        /* --- APP CONTENT (HIDDEN BY DEFAULT) --- */
+        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
         #appContent { display: none; }
-
-        body { 
-            margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: var(--bg-color); display: flex; flex-direction: column; align-items: center; 
-            padding-top: 70px;
-        }
-
+        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 70px; }
         header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 0; background: white; z-index: 100; }
-        #menuBtn { font-size: 26px; background: white; border: 1px solid #ddd; padding: 4px 12px; border-radius: 8px; color: var(--fts-red); line-height: 1; }
-
-        #sideMenu {
-            height: 100%; width: 0; position: fixed; z-index: 9999;
-            top: 0; left: 0; background-color: var(--fts-red);
-            overflow-x: hidden; transition: 0.3s; padding-top: 50px;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
-        }
-        
-        #sideMenu a { padding: 10px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); line-height: 1.2; }
-        .menu-label { color: rgba(255,255,255,0.7); font-size: 10px; padding: 15px 20px 5px 20px; text-transform: uppercase; font-weight: bold; }
-
-        .logo { max-width: 200px; margin: 10px 0 20px 0; }
+        #menuBtn { font-size: 26px; background: white; border: 1px solid #ddd; padding: 4px 12px; border-radius: 8px; color: var(--fts-red); cursor: pointer; }
+        #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 50px; }
+        #sideMenu a { padding: 10px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .logo { max-width: 180px; margin: 5px 0 15px 0; }
+        .welcome-text { font-size: 18px; font-weight: bold; color: var(--fts-dark); margin-bottom: 20px; text-transform: capitalize; }
         .container { width: 92%; max-width: 400px; text-align: center; }
-
         .check-card { background: #f9f9f9; border-top: 8px solid var(--fts-red); border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: left; }
         .timesheet-card { border-top: 8px solid var(--fts-dark); }
+        .trailer-card { border-top: 8px solid #555555; }
         .status-badge { font-size: 11px; font-weight: bold; color: #28a745; background: #e8f5e9; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px; display: inline-block; }
-        .payroll-badge { color: #1976d2; background: #e3f2fd; }
-
-        .btn { background: var(--fts-red); color: white; text-align: center; padding: 16px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 17px; display: block; margin-top: 15px; }
+        .btn { background: var(--fts-red); color: white; text-align: center; padding: 16px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 17px; display: block; margin-top: 15px; border: none; cursor: pointer; }
         .btn-dark { background: var(--fts-dark); }
+        .btn-grey { background: #555555; }
     </style>
 </head>
 <body>
@@ -72,63 +38,110 @@
             <input type="text" id="username" placeholder="Username">
             <input type="password" id="password" placeholder="Password">
             <button onclick="checkLogin()">Login</button>
-            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 10px;">Incorrect details. Please try again.</p>
+            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 10px;">Incorrect details.</p>
         </div>
     </div>
 
     <div id="appContent">
-        <header>
-            <div id="menuBtn" onclick="openNav()">☰</div>
-        </header>
+        <header><div id="menuBtn" onclick="openNav()">☰</div></header>
 
         <div id="sideMenu">
             <a href="#" onclick="closeNav()">Home</a>
-            <div class="menu-label">Support</div>
             <a href="tel:07701238561">David Jayes</a>
             <a href="tel:01949480130">Office</a>
-            <a href="tel:07806609199">JCC Recovery</a>
-            <a href="tel:01785413500">Lodge Tyres</a>
-            <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center; text-decoration: underline; font-size: 13px;">✕ Close Menu</div>
+            <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer; margin-top: 30px; display: block; padding: 10px 20px;">Log Out</a>
+            <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-decoration: underline;">✕ Close</div>
         </div>
 
         <img src="logo.png" class="logo" alt="Frost Haulage">
+        <div id="welcomeUser" class="welcome-text"></div>
 
         <div class="container">
             <div class="check-card">
                 <div class="status-badge">DVSA COMPLIANT</div>
                 <h2 style="margin:0; color:#E62411; font-size: 20px;">Daily Vehicle Check</h2>
-                <p style="color:#666; font-size: 14px; margin: 10px 0;">Please ensure you do your daily vehicle checks before starting your journey.</p>
                 <a href="https://forms.gle/f8FUy2U54c5Eof5TA" class="btn">Start Check</a>
             </div>
 
+            <div class="check-card trailer-card">
+                <div class="status-badge">FLEET MGMT</div>
+                <h2 style="margin:0; color:#333333; font-size: 20px;">FTS Trailer Selection</h2>
+                <a href="https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform" id="trailerLink" class="btn btn-grey">Log Trailer</a>
+            </div>
+
             <div class="check-card timesheet-card">
-                <div class="status-badge payroll-badge">PAYROLL</div>
+                <div class="status-badge">PAYROLL</div>
                 <h2 style="margin:0; color:#333333; font-size: 20px;">Driver Timesheet</h2>
-                <p style="color:#666; font-size: 14px; margin: 10px 0;">Log your shift hours and breaks daily.</p>
                 <a href="https://docs.google.com/forms/d/e/1FAIpQLSd_Ke11hqTTCzr9vdLfJCqitmRejct-sn2MQxtqhvi7B5xa0g/viewform?usp=pp_url&entry.717090179=Richard+Robinson" class="btn btn-dark">Log Hours</a>
             </div>
         </div>
     </div>
 
     <script>
+        const validUsers = {
+            "andy carter": "ac26",
+            "andy west": "aw26",
+            "barrie ashmore": "ba26",
+            "chris frost": "cf26
+            "callum lee": "ca26",
+            "dean young": "dy26",
+            "ian bason": "ib26",
+            "jan zackl": "jz26",
+            "john hulbert": "jh26",
+            "josh harrison": "jh26",
+            "lee woodcock": "lw26",
+            "marc wickham": "mw26",
+            "michael moss": "mm26",
+            "neil woods": "nw26",
+            "rhys hill": "rh26",
+            "ricardo morais": "rm26",
+            "richard dickens": "rd26",
+            "richard robinson": "rr26",
+            "richard spence": "rs26",
+            "roy taylor": "rt26",
+            "stuart sleigh": "ss26",
+            "thomas broomhead": "tb26",
+            "marco chung": "mc26"
+        };
+
+        window.onload = function() {
+            if (localStorage.getItem("frostLoggedIn") === "true") {
+                showDashboard(localStorage.getItem("frostUserName") || "Driver");
+            }
+        };
+
         function checkLogin() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
+            const userInput = document.getElementById('username').value.toLowerCase().trim();
+            const passInput = document.getElementById('password').value;
             
-            // SET YOUR USERNAME AND PASSWORD HERE
-            if (user.toLowerCase() === "frost" && pass === "Haulage2026") {
-                document.getElementById('loginOverlay').style.display = "none";
-                document.getElementById('appContent').style.display = "flex";
-                document.getElementById('appContent').style.flexDirection = "column";
-                document.getElementById('appContent').style.alignItems = "center";
+            if (validUsers[userInput] && validUsers[userInput] === passInput) {
+                localStorage.setItem("frostLoggedIn", "true");
+                localStorage.setItem("frostUserName", userInput);
+                showDashboard(userInput);
             } else {
                 document.getElementById('errorMsg').style.display = "block";
             }
         }
 
+        function showDashboard(name) {
+            document.getElementById('loginOverlay').style.display = "none";
+            document.getElementById('appContent').style.display = "flex";
+            document.getElementById('appContent').style.flexDirection = "column";
+            document.getElementById('appContent').style.alignItems = "center";
+            document.getElementById('welcomeUser').innerText = "Welcome, " + name;
+
+            const trailerBase = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform"; 
+            const entryID = "entry.2036897075"; 
+            document.getElementById('trailerLink').href = trailerBase + "?" + entryID + "=" + encodeURIComponent(name);
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
         function openNav() { document.getElementById("sideMenu").style.width = "260px"; }
         function closeNav() { document.getElementById("sideMenu").style.width = "0"; }
     </script>
-
 </body>
 </html>
