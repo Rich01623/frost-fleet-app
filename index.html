@@ -5,27 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Frost Fleet Compliance</title>
     <style>
-        :root { --fts-red: #E62411; --fts-dark: #333333; --bg-color: #ffffff; }
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-box { width: 85%; max-width: 320px; text-align: center; }
-        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        #appContent { display: none; }
-        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 70px; }
-        header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 0; background: white; z-index: 100; }
-        #menuBtn { font-size: 26px; background: white; border: 1px solid #ddd; padding: 4px 12px; border-radius: 8px; color: var(--fts-red); cursor: pointer; }
+        :root { 
+            --fts-red: #E62411; 
+            --fts-dark: #2d3436; 
+            --bg-color: #f4f7f6; /* Professional light grey background */
+            --card-bg: #ffffff;
+        }
         
-        #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 50px; }
+        /* --- CONTINUOUS TICKER STYLING --- */
+        .ticker-wrap {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            overflow: hidden;
+            height: 35px;
+            background-color: #000;
+            border-bottom: 2px solid var(--fts-red);
+            z-index: 10001;
+        }
+        .ticker {
+            display: inline-block;
+            white-space: nowrap;
+            height: 35px;
+            line-height: 35px;
+            animation: continuous-loop 60s linear infinite;
+        }
+        .ticker:hover { animation-play-state: paused; }
+        .ticker__item {
+            display: inline-block;
+            padding: 0 40px;
+            font-size: 13px;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        @keyframes continuous-loop {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+
+        /* --- LOGIN SCREEN STYLING --- */
+        #loginOverlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: white; 
+            z-index: 10000; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .login-box { width: 85%; max-width: 320px; text-align: center; }
+        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .login-box input:focus { border-color: var(--fts-red); }
+        .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        
+        /* --- MAIN APP CONTENT STYLING --- */
+        #appContent { display: none; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; }
+        
+        header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: white; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #menuBtn { font-size: 26px; background: white; border: 1px solid #eee; padding: 4px 12px; border-radius: 8px; color: var(--fts-red); cursor: pointer; }
+        
+        #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 80px; }
         #sideMenu a, .menu-item { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .gate-code { background: rgba(0,0,0,0.2); color: #fff; font-size: 17px; letter-spacing: 1px; }
         .menu-label { color: rgba(255,255,255,0.6); font-size: 11px; padding: 15px 20px 5px; text-transform: uppercase; }
 
-        .logo { max-width: 180px; margin: 5px 0 15px 0; }
-        .welcome-text { font-size: 18px; font-weight: bold; color: var(--fts-dark); margin-bottom: 20px; text-transform: capitalize; }
-        .container { width: 92%; max-width: 400px; text-align: center; }
-        .check-card { background: #f9f9f9; border-top: 8px solid var(--fts-red); border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: left; }
-        .status-badge { font-size: 11px; font-weight: bold; color: #28a745; background: #e8f5e9; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px; display: inline-block; }
-        .btn { background: var(--fts-red); color: white; text-align: center; padding: 16px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 17px; display: block; margin-top: 15px; border: none; cursor: pointer; }
+        .logo { max-width: 160px; margin: 10px 0 20px 0; }
+        .welcome-text { font-size: 16px; font-weight: 500; color: #636e72; margin-bottom: 25px; text-transform: capitalize; }
+        
+        /* --- PROFESSIONAL CARD STYLES --- */
+        .container { width: 90%; max-width: 420px; text-align: center; }
+        .check-card { 
+            background: var(--card-bg); 
+            border: 1px solid #e0e6ed;
+            border-top: 4px solid var(--fts-red); 
+            border-radius: 12px; 
+            padding: 24px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); 
+            margin-bottom: 20px; 
+            text-align: left; 
+        }
+        .status-badge { 
+            font-size: 10px; 
+            letter-spacing: 1px;
+            font-weight: 800; 
+            color: #6c757d; 
+            background: #f8f9fa; 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            margin-bottom: 12px; 
+            display: inline-block;
+            border: 1px solid #dee2e6;
+        }
+        .card-title { margin: 0; color: #2d3436; font-size: 19px; font-weight: 700; }
+        .card-subtitle { font-size: 13px; color: #636e72; margin: 6px 0 18px 0; line-height: 1.4; }
+        
+        .btn { 
+            background: var(--fts-dark); 
+            color: white; 
+            text-align: center; 
+            padding: 14px; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-weight: 600; 
+            font-size: 15px; 
+            display: block; 
+            border: none; 
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .btn-red { background: var(--fts-red); }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -33,23 +128,42 @@
     <div id="loginOverlay">
         <img src="logo.png" class="logo" alt="Frost Haulage">
         <div class="login-box">
-            <h3 style="color: var(--fts-red);">Fleet Access</h3>
+            <h3 style="color: var(--fts-red); margin-bottom: 20px;">Fleet Portal Access</h3>
             <input type="text" id="username" placeholder="Full Name">
             <input type="password" id="password" placeholder="Password">
             <button onclick="checkLogin()">Login</button>
-            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 10px;">Login failed.</p>
+            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 15px;">Invalid Credentials.</p>
         </div>
     </div>
 
     <div id="appContent">
+        <div class="ticker-wrap">
+            <div class="ticker">
+                <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
+                <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
+                <div class="ticker__item">TRAILER LOGS: REMEMBER TO ENTER TRAILER ID</div>
+                <div class="ticker__item">DVSA: SHOW EMAIL RECEIPT IF STOPPED</div>
+                <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
+                <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
+                <div class="ticker__item">TRAILER LOGS: REMEMBER TO ENTER TRAILER ID</div>
+                <div class="ticker__item">DVSA: SHOW EMAIL RECEIPT IF STOPPED</div>
+            </div>
+        </div>
+
         <header><div id="menuBtn" onclick="openNav()">☰</div></header>
         
         <div id="sideMenu">
             <div class="menu-label">Security</div>
             <div class="menu-item gate-code">Gate Code: <b>3684</b></div>
+            
+            <div class="menu-label">Driver Tools</div>
+            <a href="https://snapacc.com/map/" target="_blank">Secure Parking (SNAP)</a>
+            <a href="https://YOUR_GOOGLE_DRIVE_FOLDER_LINK" target="_blank">Useful Documents</a>
+
             <div class="menu-label">Support</div>
             <a href="tel:07701238561">David Jayes</a>
             <a href="tel:01949480130">Office</a>
+            
             <div class="menu-label">Account</div>
             <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer;">Log Out</a>
             <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center; font-size: 13px;">✕ Close Menu</div>
@@ -60,15 +174,17 @@
 
         <div class="container">
             <div class="check-card">
-                <div class="status-badge">DVSA COMPLIANT</div>
-                <h2 style="margin:0; color:#E62411; font-size: 20px;">Daily Vehicle Check</h2>
-                <a href="#" id="dailyCheckLink" class="btn">Start Check</a>
+                <div class="status-badge">DVSA COMPLIANCE</div>
+                <h2 class="card-title">Daily Vehicle Check</h2>
+                <p class="card-subtitle">Complete your digital walkaround and safety inspection before starting your shift.</p>
+                <a href="#" id="dailyCheckLink" class="btn btn-red">Launch Inspection</a>
             </div>
 
-            <div class="check-card" style="border-top-color: #555;">
-                <div class="status-badge">FLEET MGMT</div>
-                <h2 style="margin:0; color:#333; font-size: 20px;">FTS Trailer Selection</h2>
-                <a href="#" id="trailerLink" class="btn" style="background:#555;">Log Trailer</a>
+            <div class="check-card" style="border-top-color: var(--fts-dark);">
+                <div class="status-badge">FLEET OPERATIONS</div>
+                <h2 class="card-title">Trailer Assignment</h2>
+                <p class="card-subtitle">Update your trailer unit ID for fleet tracking and compliance records.</p>
+                <a href="#" id="trailerLink" class="btn">Update Trailer Log</a>
             </div>
         </div>
     </div>
@@ -95,8 +211,6 @@
         function checkLogin() {
             const user = document.getElementById('username').value.toLowerCase().trim();
             const pass = document.getElementById('password').value.trim();
-            
-            // Check password exactly as entered, OR all lowercase (for mobile ease)
             if (validUsers[user] && (validUsers[user] === pass || validUsers[user] === pass.toLowerCase())) {
                 localStorage.setItem("frostLoggedIn", "true");
                 localStorage.setItem("frostUserName", user);
@@ -111,7 +225,7 @@
             document.getElementById('appContent').style.display = "flex";
             document.getElementById('appContent').style.flexDirection = "column";
             document.getElementById('appContent').style.alignItems = "center";
-            document.getElementById('welcomeUser').innerText = "Welcome, " + name;
+            document.getElementById('welcomeUser').innerText = "Session Active: " + name;
 
             const dailyUrl = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform";
             document.getElementById('dailyCheckLink').href = dailyUrl + "?usp=pp_url&entry.585693254=" + encodeURIComponent(name);
