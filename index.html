@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Frost Fleet Compliance</title>
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#E62411">
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+
     <style>
         :root { 
             --fts-red: #E62411; 
@@ -192,7 +201,6 @@
     </div>
 
     <script>
-        /* --- UPDATED USER LIST WITH PROVIDED GMAIL ADDRESSES --- */
         const validUsers = {
             "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
             "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
@@ -252,15 +260,12 @@
             document.getElementById('appContent').style.alignItems = "center";
             document.getElementById('welcomeUser').innerText = "Session Active: " + name;
 
-            // 1. DVSA CHECK
             const dailyUrl = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform";
             document.getElementById('dailyCheckLink').href = dailyUrl + "?usp=pp_url&entry.585693254=" + encodeURIComponent(name);
 
-            // 2. TRAILER LOG
             const trailerUrl = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform";
             document.getElementById('trailerLink').href = trailerUrl + "?entry.2036897075=" + encodeURIComponent(name);
             
-            // 3. FUEL LOG
             const fuelBaseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform"; 
             const nameEntry = "entry.1436863426";
             const emailEntry = "entry.342429911";
@@ -278,4 +283,3 @@
     </script>
 </body>
 </html>
-
