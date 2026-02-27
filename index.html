@@ -8,7 +8,7 @@
         :root { 
             --fts-red: #E62411; 
             --fts-dark: #2d3436; 
-            --bg-color: #f4f7f6; /* Professional light grey background */
+            --bg-color: #f4f7f6; 
             --card-bg: #ffffff;
         }
         
@@ -28,7 +28,7 @@
             white-space: nowrap;
             height: 35px;
             line-height: 35px;
-            animation: continuous-loop 60s linear infinite;
+            animation: continuous-loop 50s linear infinite;
         }
         .ticker:hover { animation-play-state: paused; }
         .ticker__item {
@@ -60,12 +60,11 @@
         }
         .login-box { width: 85%; max-width: 320px; text-align: center; }
         .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .login-box input:focus { border-color: var(--fts-red); }
         .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
         
         /* --- MAIN APP CONTENT STYLING --- */
         #appContent { display: none; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 40px; }
         
         header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: white; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         #menuBtn { font-size: 26px; background: white; border: 1px solid #eee; padding: 4px 12px; border-radius: 8px; color: var(--fts-red); cursor: pointer; }
@@ -78,7 +77,6 @@
         .logo { max-width: 160px; margin: 10px 0 20px 0; }
         .welcome-text { font-size: 16px; font-weight: 500; color: #636e72; margin-bottom: 25px; text-transform: capitalize; }
         
-        /* --- PROFESSIONAL CARD STYLES --- */
         .container { width: 90%; max-width: 420px; text-align: center; }
         .check-card { 
             background: var(--card-bg); 
@@ -142,11 +140,11 @@
                 <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
                 <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
                 <div class="ticker__item">TRAILER LOGS: REMEMBER TO ENTER TRAILER ID</div>
-                <div class="ticker__item">DVSA: SHOW EMAIL RECEIPT IF STOPPED</div>
+                <div class="ticker__item">THIS WEEKS FUEL CARD IS ROUTEX BP</div>
                 <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
                 <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
                 <div class="ticker__item">TRAILER LOGS: REMEMBER TO ENTER TRAILER ID</div>
-                <div class="ticker__item">DVSA: SHOW EMAIL RECEIPT IF STOPPED</div>
+                <div class="ticker__item">THIS WEEKS FUEL CARD IS ROUTEX BP</div>
             </div>
         </div>
 
@@ -155,15 +153,12 @@
         <div id="sideMenu">
             <div class="menu-label">Security</div>
             <div class="menu-item gate-code">Gate Code: <b>3684</b></div>
-            
             <div class="menu-label">Driver Tools</div>
             <a href="https://snapacc.com/map/" target="_blank">Secure Parking (SNAP)</a>
             <a href="https://YOUR_GOOGLE_DRIVE_FOLDER_LINK" target="_blank">Useful Documents</a>
-
             <div class="menu-label">Support</div>
             <a href="tel:07701238561">David Jayes</a>
             <a href="tel:01949480130">Office</a>
-            
             <div class="menu-label">Account</div>
             <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer;">Log Out</a>
             <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center; font-size: 13px;">✕ Close Menu</div>
@@ -186,19 +181,47 @@
                 <p class="card-subtitle">Update your trailer unit ID for fleet tracking and compliance records.</p>
                 <a href="#" id="trailerLink" class="btn">Update Trailer Log</a>
             </div>
+
+            <div class="check-card" style="border-top-color: #34495e;">
+                <div class="status-badge">COST MANAGEMENT</div>
+                <h2 class="card-title">Fuel Log</h2>
+                <p class="card-subtitle">Record fuel purchase and current odometer reading.</p>
+                <a href="#" id="fuelLink" class="btn" style="background: #34495e;">Submit Fuel Entry</a>
+            </div>
         </div>
     </div>
 
     <script>
+        /* --- UPDATED USER LIST WITH PROVIDED GMAIL ADDRESSES --- */
         const validUsers = {
-            "frost": "Haulage2026", "richard": "Frost2026", "david": "Fleet2026", "office": "Admin2026",
-            "chris frost": "cf26", "agency1": "agency",
-            "andy carter": "ac26", "andy west": "aw26", "barrie ashmore": "ba26", "callum lee": "ca26",
-            "dean young": "dy26", "ian bason": "ib26", "jan zackl": "jz26", "john hulbert": "jh26",
-            "josh harrison": "jh26", "lee woodcock": "lw26", "marc wickham": "mw26", "michael moss": "mm26",
-            "neil woods": "nw26", "rhys hill": "rh26", "ricardo morais": "rm26", "richard dickens": "rd26",
-            "richard robinson": "rr26", "richard spence": "rs26", "roy taylor": "rt26", "stuart sleigh": "ss26",
-            "thomas broomhead": "tb26", "marco chung": "mc26"
+            "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
+            "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
+            "david": { pass: "Fleet2026", email: "david@frosthaulage.co.uk" },
+            "office": { pass: "Admin2026", email: "office@frosthaulage.co.uk" },
+            "chris frost": { pass: "cf26", email: "" },
+            "agency1": { pass: "agency", email: "" },
+            "andy carter": { pass: "ac26", email: "" },
+            "andy west": { pass: "aw26", email: "a.west1fts@gmail.com" },
+            "barrie ashmore": { pass: "ba26", email: "" },
+            "callum lee": { pass: "ca26", email: "c.lee1fts@gmail.com" },
+            "dean young": { pass: "dy26", email: "" },
+            "ian bason": { pass: "ib26", email: "i.bason1fts@gmail.com" },
+            "jan zackl": { pass: "jz26", email: "" },
+            "john hulbert": { pass: "jh26", email: "" },
+            "josh harrison": { pass: "jh26", email: "j.harrison1fts@gmail.com" },
+            "lee woodcock": { pass: "lw26", email: "l.woodcock1fts@gmail.com" },
+            "marc wickham": { pass: "mw26", email: "m.wickham1fts@gmail.com" },
+            "michael moss": { pass: "mm26", email: "" },
+            "neil woods": { pass: "nw26", email: "" },
+            "rhys hill": { pass: "rh26", email: "r.hill1fts@gmail.com" },
+            "ricardo morais": { pass: "rm26", email: "" },
+            "richard dickens": { pass: "rd26", email: "" },
+            "richard robinson": { pass: "rr26", email: "" },
+            "richard spence": { pass: "rs26", email: "r.spence1fts@gmail.com" },
+            "roy taylor": { pass: "rt26", email: "r.taylor1fts@gmail.com" },
+            "stuart sleigh": { pass: "ss26", email: "s.sleigh1fts@gmail.com" },
+            "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" },
+            "marco chung": { pass: "mc26", email: "" }
         };
 
         window.onload = function() {
@@ -211,7 +234,9 @@
         function checkLogin() {
             const user = document.getElementById('username').value.toLowerCase().trim();
             const pass = document.getElementById('password').value.trim();
-            if (validUsers[user] && (validUsers[user] === pass || validUsers[user] === pass.toLowerCase())) {
+            const userData = validUsers[user];
+
+            if (userData && (userData.pass === pass || userData.pass === pass.toLowerCase())) {
                 localStorage.setItem("frostLoggedIn", "true");
                 localStorage.setItem("frostUserName", user);
                 showDashboard(user);
@@ -227,11 +252,24 @@
             document.getElementById('appContent').style.alignItems = "center";
             document.getElementById('welcomeUser').innerText = "Session Active: " + name;
 
+            // 1. DVSA CHECK
             const dailyUrl = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform";
             document.getElementById('dailyCheckLink').href = dailyUrl + "?usp=pp_url&entry.585693254=" + encodeURIComponent(name);
 
+            // 2. TRAILER LOG
             const trailerUrl = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform";
             document.getElementById('trailerLink').href = trailerUrl + "?entry.2036897075=" + encodeURIComponent(name);
+            
+            // 3. FUEL LOG
+            const fuelBaseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform"; 
+            const nameEntry = "entry.1436863426";
+            const emailEntry = "entry.342429911";
+            
+            const realEmail = validUsers[name] ? validUsers[name].email : "";
+
+            document.getElementById('fuelLink').href = fuelBaseUrl + "?usp=pp_url&" + 
+                nameEntry + "=" + encodeURIComponent(name) + "&" + 
+                emailEntry + "=" + encodeURIComponent(realEmail);
         }
 
         function logout() { localStorage.clear(); location.reload(); }
