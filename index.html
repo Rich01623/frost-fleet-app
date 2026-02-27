@@ -16,44 +16,25 @@
     <style>
         :root { --fts-red: #E62411; --fts-dark: #2d3436; --bg-color: #f4f7f6; --card-bg: #ffffff; }
         
-        /* --- TICKER FIX --- */
+        /* TICKER */
         .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 35px; background-color: #000; border-bottom: 2px solid var(--fts-red); z-index: 10001; }
-        
-        .ticker { 
-            display: inline-block; 
-            white-space: nowrap; 
-            height: 35px; 
-            line-height: 35px; 
-            animation: ticker-move 60s linear infinite; /* Adjusted speed for smoother loop */
-        }
-        
-        .ticker__item { 
-            display: inline-block; 
-            padding: 0 50px; 
-            font-size: 13px; 
-            color: white; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-        }
+        .ticker { display: inline-block; white-space: nowrap; height: 35px; line-height: 35px; animation: ticker-move 60s linear infinite; }
+        .ticker__item { display: inline-block; padding: 0 50px; font-size: 13px; color: white; font-weight: bold; text-transform: uppercase; }
+        @keyframes ticker-move { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-33.33%, 0, 0); } }
 
-        @keyframes ticker-move { 
-            0% { transform: translate3d(0, 0, 0); } 
-            100% { transform: translate3d(-33.33%, 0, 0); } /* Moves only through one set of the triple-content */
-        }
-
-        /* --- LOGIN --- */
+        /* LOGIN */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-box { width: 85%; max-width: 320px; text-align: center; }
         .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
         .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
         
-        /* --- LAYOUT --- */
+        /* LAYOUT */
         #appContent { display: none; width: 100%; flex-direction: column; align-items: center; }
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 40px; }
         header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: white; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         #menuBtn { font-size: 26px; color: var(--fts-red); cursor: pointer; padding: 4px 12px; background: white; border: 1px solid #eee; border-radius: 8px; }
         
-        /* --- SIDE MENU --- */
+        /* SIDE MENU */
         #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 80px; }
         #sideMenu a, .menu-item { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .gate-code { background: rgba(0,0,0,0.2); color: #fff; font-size: 17px; letter-spacing: 1px; }
@@ -62,14 +43,14 @@
         .logo { max-width: 160px; margin: 10px 0 20px 0; }
         .welcome-text { font-size: 16px; font-weight: 500; color: #636e72; margin-bottom: 25px; text-transform: capitalize; }
         
-        /* --- CARDS --- */
+        /* CARDS */
         .container { width: 90%; max-width: 420px; text-align: center; }
         .check-card { background: var(--card-bg); border: 1px solid #e0e6ed; border-top: 4px solid var(--fts-red); border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; text-align: left; }
         .status-badge { font-size: 10px; font-weight: 800; color: #6c757d; background: #f8f9fa; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px; border: 1px solid #dee2e6; }
         .card-title { margin: 0; color: #2d3436; font-size: 19px; font-weight: 700; }
         .card-subtitle { font-size: 13px; color: #636e72; margin: 6px 0 18px 0; line-height: 1.4; }
         
-        /* --- BUTTONS --- */
+        /* BUTTONS */
         .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: block; border: none; cursor: pointer; transition: 0.2s; }
         .btn-red { background: var(--fts-red); }
         .btn:active { transform: scale(0.96); }
@@ -95,9 +76,6 @@
     <div id="appContent">
         <div class="ticker-wrap">
             <div class="ticker">
-                <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
-                <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
-                <div class="ticker__item">THIS WEEKS FUEL CARD IS ROUTEX BP</div>
                 <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
                 <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
                 <div class="ticker__item">THIS WEEKS FUEL CARD IS ROUTEX BP</div>
@@ -159,11 +137,9 @@
     </div>
 
     <script>
-        const MY_GOOGLE_SCRIPT_URL = "PASTE_YOUR_URL_HERE";
+        const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpDm34e7T3hlNxg5sJR9flyafBz377GTBjj_NHr7dIauovQXywZxk4VJDvx8Q7zhlAbw/exec";
 
         const validUsers = {
-            "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
-            "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
             "andy west": { pass: "aw26", email: "a.west1fts@gmail.com" },
             "callum lee": { pass: "ca26", email: "c.lee1fts@gmail.com" },
             "ian bason": { pass: "ib26", email: "i.bason1fts@gmail.com" },
@@ -174,7 +150,10 @@
             "richard spence": { pass: "rs26", email: "r.spence1fts@gmail.com" },
             "roy taylor": { pass: "rt26", email: "r.taylor1fts@gmail.com" },
             "stuart sleigh": { pass: "ss26", email: "s.sleigh1fts@gmail.com" },
-            "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" }
+            "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" },
+            "richard robinson": { pass: "rr26", email: "robinson01623@gmail.com" },
+            "jon hulbert": { pass: "jh26", email: "j.hulbert1fts@gmail.com" },
+            "chris frost": { pass: "cf26", email: "c.frost1fts@gmail.com" }
         };
 
         function logShift(action) {
@@ -182,7 +161,9 @@
             if (confirm("Confirm " + action + " for " + userName + "?")) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     const loc = position.coords.latitude + "," + position.coords.longitude;
-                    fetch(MY_GOOGLE_SCRIPT_URL + "?name=" + encodeURIComponent(userName) + "&action=" + action + "&location=" + loc, { mode: 'no-cors' });
+                    const finalUrl = MY_GOOGLE_SCRIPT_URL + "?name=" + encodeURIComponent(userName) + "&action=" + action + "&location=" + loc;
+                    
+                    fetch(finalUrl, { method: 'GET', mode: 'no-cors' });
                     alert("✅ " + action + " logged.");
                 }, () => alert("❌ GPS Error"), { enableHighAccuracy: true });
             }
