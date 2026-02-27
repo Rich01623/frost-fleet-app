@@ -5,79 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Frost Fleet Compliance</title>
 
+    <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#E62411">
     
     <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
 
     <style>
-        :root { 
-            --fts-red: #E62411; 
-            --fts-dark: #2d3436; 
-            --bg-color: #f4f7f6; 
-            --card-bg: #ffffff;
+        :root { --fts-red: #E62411; --fts-dark: #2d3436; --bg-color: #f4f7f6; --card-bg: #ffffff; }
+        
+        /* --- TICKER FIX --- */
+        .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 35px; background-color: #000; border-bottom: 2px solid var(--fts-red); z-index: 10001; }
+        
+        .ticker { 
+            display: inline-block; 
+            white-space: nowrap; 
+            height: 35px; 
+            line-height: 35px; 
+            animation: ticker-move 60s linear infinite; /* Adjusted speed for smoother loop */
         }
         
-        /* --- CONTINUOUS TICKER STYLING --- */
-        .ticker-wrap {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            overflow: hidden;
-            height: 35px;
-            background-color: #000;
-            border-bottom: 2px solid var(--fts-red);
-            z-index: 10001;
-        }
-        .ticker {
-            display: inline-block;
-            white-space: nowrap;
-            height: 35px;
-            line-height: 35px;
-            animation: continuous-loop 50s linear infinite;
-        }
-        .ticker:hover { animation-play-state: paused; }
-        .ticker__item {
-            display: inline-block;
-            padding: 0 40px;
-            font-size: 13px;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        @keyframes continuous-loop {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-50%, 0, 0); }
+        .ticker__item { 
+            display: inline-block; 
+            padding: 0 50px; 
+            font-size: 13px; 
+            color: white; 
+            font-weight: bold; 
+            text-transform: uppercase; 
         }
 
-        /* --- LOGIN SCREEN STYLING --- */
-        #loginOverlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: white; 
-            z-index: 10000; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
+        @keyframes ticker-move { 
+            0% { transform: translate3d(0, 0, 0); } 
+            100% { transform: translate3d(-33.33%, 0, 0); } /* Moves only through one set of the triple-content */
         }
+
+        /* --- LOGIN --- */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-box { width: 85%; max-width: 320px; text-align: center; }
         .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
         
-        /* --- MAIN APP CONTENT STYLING --- */
-        #appContent { display: none; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 40px; }
-        
+        /* --- LAYOUT --- */
+        #appContent { display: none; width: 100%; flex-direction: column; align-items: center; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 40px; }
         header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: white; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        #menuBtn { font-size: 26px; background: white; border: 1px solid #eee; padding: 4px 12px; border-radius: 8px; color: var(--fts-red); cursor: pointer; }
+        #menuBtn { font-size: 26px; color: var(--fts-red); cursor: pointer; padding: 4px 12px; background: white; border: 1px solid #eee; border-radius: 8px; }
         
+        /* --- SIDE MENU --- */
         #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 80px; }
         #sideMenu a, .menu-item { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .gate-code { background: rgba(0,0,0,0.2); color: #fff; font-size: 17px; letter-spacing: 1px; }
@@ -86,48 +62,21 @@
         .logo { max-width: 160px; margin: 10px 0 20px 0; }
         .welcome-text { font-size: 16px; font-weight: 500; color: #636e72; margin-bottom: 25px; text-transform: capitalize; }
         
+        /* --- CARDS --- */
         .container { width: 90%; max-width: 420px; text-align: center; }
-        .check-card { 
-            background: var(--card-bg); 
-            border: 1px solid #e0e6ed;
-            border-top: 4px solid var(--fts-red); 
-            border-radius: 12px; 
-            padding: 24px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03); 
-            margin-bottom: 20px; 
-            text-align: left; 
-        }
-        .status-badge { 
-            font-size: 10px; 
-            letter-spacing: 1px;
-            font-weight: 800; 
-            color: #6c757d; 
-            background: #f8f9fa; 
-            padding: 4px 10px; 
-            border-radius: 4px; 
-            margin-bottom: 12px; 
-            display: inline-block;
-            border: 1px solid #dee2e6;
-        }
+        .check-card { background: var(--card-bg); border: 1px solid #e0e6ed; border-top: 4px solid var(--fts-red); border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; text-align: left; }
+        .status-badge { font-size: 10px; font-weight: 800; color: #6c757d; background: #f8f9fa; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px; border: 1px solid #dee2e6; }
         .card-title { margin: 0; color: #2d3436; font-size: 19px; font-weight: 700; }
         .card-subtitle { font-size: 13px; color: #636e72; margin: 6px 0 18px 0; line-height: 1.4; }
         
-        .btn { 
-            background: var(--fts-dark); 
-            color: white; 
-            text-align: center; 
-            padding: 14px; 
-            border-radius: 8px; 
-            text-decoration: none; 
-            font-weight: 600; 
-            font-size: 15px; 
-            display: block; 
-            border: none; 
-            cursor: pointer;
-            transition: 0.2s ease;
-        }
+        /* --- BUTTONS --- */
+        .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: block; border: none; cursor: pointer; transition: 0.2s; }
         .btn-red { background: var(--fts-red); }
-        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn:active { transform: scale(0.96); }
+        
+        .shift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .btn-shift { margin-top: 0; padding: 18px 5px; font-size: 14px; }
+        .btn-start { background: var(--fts-red); border: 2px solid #b71c1c; }
     </style>
 </head>
 <body>
@@ -148,11 +97,12 @@
             <div class="ticker">
                 <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
                 <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
-                <div class="ticker__item">TRAILER LOGS: REMEMBER TO ENTER TRAILER ID</div>
                 <div class="ticker__item">THIS WEEKS FUEL CARD IS ROUTEX BP</div>
                 <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
                 <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
-                <div class="ticker__item">TRAILER LOGS: REMEMBER TO ENTER TRAILER ID</div>
+                <div class="ticker__item">THIS WEEKS FUEL CARD IS ROUTEX BP</div>
+                <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
+                <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
                 <div class="ticker__item">THIS WEEKS FUEL CARD IS ROUTEX BP</div>
             </div>
         </div>
@@ -164,13 +114,13 @@
             <div class="menu-item gate-code">Gate Code: <b>3684</b></div>
             <div class="menu-label">Driver Tools</div>
             <a href="https://snapacc.com/map/" target="_blank">Secure Parking (SNAP)</a>
-            <a href="https://YOUR_GOOGLE_DRIVE_FOLDER_LINK" target="_blank">Useful Documents</a>
+            <a href="#">Useful Documents</a>
             <div class="menu-label">Support</div>
             <a href="tel:07701238561">David Jayes</a>
             <a href="tel:01949480130">Office</a>
             <div class="menu-label">Account</div>
             <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer;">Log Out</a>
-            <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center; font-size: 13px;">✕ Close Menu</div>
+            <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center;">✕ Close Menu</div>
         </div>
 
         <img src="logo.png" class="logo" alt="Frost Haulage">
@@ -178,107 +128,95 @@
 
         <div class="container">
             <div class="check-card">
+                <div class="status-badge">LIVE GPS TIMECLOCK</div>
+                <h2 class="card-title">Time sheet</h2>
+                <div class="shift-grid">
+                    <button class="btn btn-start btn-shift" onclick="logShift('START')">START SHIFT</button>
+                    <button class="btn btn-dark btn-shift" onclick="logShift('END')">END SHIFT</button>
+                </div>
+            </div>
+
+            <div class="check-card">
                 <div class="status-badge">DVSA COMPLIANCE</div>
                 <h2 class="card-title">Daily Vehicle Check</h2>
-                <p class="card-subtitle">Complete your digital walkaround and safety inspection before starting your shift.</p>
-                <a href="#" id="dailyCheckLink" class="btn btn-red">Launch Inspection</a>
+                <p class="card-subtitle">Complete your daily vehicle check before driving</p>
+                <a href="#" id="dailyCheckLink" class="btn btn-red">Start checks</a>
             </div>
 
             <div class="check-card" style="border-top-color: var(--fts-dark);">
                 <div class="status-badge">FLEET OPERATIONS</div>
-                <h2 class="card-title">Trailer Assignment</h2>
-                <p class="card-subtitle">Update your trailer unit ID for fleet tracking and compliance records.</p>
-                <a href="#" id="trailerLink" class="btn">Update Trailer Log</a>
+                <h2 class="card-title">Daily trailer checks.</h2>
+                <p class="card-subtitle">Trailer checks should be carried out each time you change trailers</p>
+                <a href="#" id="trailerLink" class="btn">Start checks</a>
             </div>
 
             <div class="check-card" style="border-top-color: #34495e;">
                 <div class="status-badge">COST MANAGEMENT</div>
                 <h2 class="card-title">Fuel Log</h2>
-                <p class="card-subtitle">Record fuel purchase and current odometer reading.</p>
                 <a href="#" id="fuelLink" class="btn" style="background: #34495e;">Submit Fuel Entry</a>
             </div>
         </div>
     </div>
 
     <script>
+        const MY_GOOGLE_SCRIPT_URL = "PASTE_YOUR_URL_HERE";
+
         const validUsers = {
             "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
             "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
-            "david": { pass: "Fleet2026", email: "david@frosthaulage.co.uk" },
-            "office": { pass: "Admin2026", email: "office@frosthaulage.co.uk" },
-            "chris frost": { pass: "cf26", email: "" },
-            "agency1": { pass: "agency", email: "" },
-            "andy carter": { pass: "ac26", email: "" },
             "andy west": { pass: "aw26", email: "a.west1fts@gmail.com" },
-            "barrie ashmore": { pass: "ba26", email: "" },
             "callum lee": { pass: "ca26", email: "c.lee1fts@gmail.com" },
-            "dean young": { pass: "dy26", email: "" },
             "ian bason": { pass: "ib26", email: "i.bason1fts@gmail.com" },
-            "jan zackl": { pass: "jz26", email: "" },
-            "john hulbert": { pass: "jh26", email: "" },
             "josh harrison": { pass: "jh26", email: "j.harrison1fts@gmail.com" },
             "lee woodcock": { pass: "lw26", email: "l.woodcock1fts@gmail.com" },
             "marc wickham": { pass: "mw26", email: "m.wickham1fts@gmail.com" },
-            "michael moss": { pass: "mm26", email: "" },
-            "neil woods": { pass: "nw26", email: "" },
             "rhys hill": { pass: "rh26", email: "r.hill1fts@gmail.com" },
-            "ricardo morais": { pass: "rm26", email: "" },
-            "richard dickens": { pass: "rd26", email: "" },
-            "richard robinson": { pass: "rr26", email: "robinson01623@gmail.com" },
             "richard spence": { pass: "rs26", email: "r.spence1fts@gmail.com" },
             "roy taylor": { pass: "rt26", email: "r.taylor1fts@gmail.com" },
             "stuart sleigh": { pass: "ss26", email: "s.sleigh1fts@gmail.com" },
-            "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" },
-            "marco chung": { pass: "mc26", email: "" }
+            "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" }
         };
+
+        function logShift(action) {
+            const userName = localStorage.getItem("frostUserName");
+            if (confirm("Confirm " + action + " for " + userName + "?")) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const loc = position.coords.latitude + "," + position.coords.longitude;
+                    fetch(MY_GOOGLE_SCRIPT_URL + "?name=" + encodeURIComponent(userName) + "&action=" + action + "&location=" + loc, { mode: 'no-cors' });
+                    alert("✅ " + action + " logged.");
+                }, () => alert("❌ GPS Error"), { enableHighAccuracy: true });
+            }
+        }
 
         window.onload = function() {
             const savedUser = localStorage.getItem("frostUserName");
-            if (localStorage.getItem("frostLoggedIn") === "true" && savedUser) {
-                showDashboard(savedUser);
-            }
+            if (localStorage.getItem("frostLoggedIn") === "true" && savedUser) { showDashboard(savedUser); }
         };
 
         function checkLogin() {
             const user = document.getElementById('username').value.toLowerCase().trim();
             const pass = document.getElementById('password').value.trim();
-            const userData = validUsers[user];
-
-            if (userData && (userData.pass === pass || userData.pass === pass.toLowerCase())) {
+            const ud = validUsers[user];
+            if (ud && ud.pass === pass) {
                 localStorage.setItem("frostLoggedIn", "true");
                 localStorage.setItem("frostUserName", user);
                 showDashboard(user);
-            } else {
-                document.getElementById('errorMsg').style.display = "block";
-            }
+            } else { document.getElementById('errorMsg').style.display = "block"; }
         }
 
         function showDashboard(name) {
             document.getElementById('loginOverlay').style.display = "none";
             document.getElementById('appContent').style.display = "flex";
-            document.getElementById('appContent').style.flexDirection = "column";
-            document.getElementById('appContent').style.alignItems = "center";
             document.getElementById('welcomeUser').innerText = "Session Active: " + name;
 
-            const dailyUrl = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform";
-            document.getElementById('dailyCheckLink').href = dailyUrl + "?usp=pp_url&entry.585693254=" + encodeURIComponent(name);
-
-            const trailerUrl = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform";
-            document.getElementById('trailerLink').href = trailerUrl + "?entry.2036897075=" + encodeURIComponent(name);
-            
-            const fuelBaseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform"; 
-            const nameEntry = "entry.1436863426";
-            const emailEntry = "entry.342429911";
-            
-            const realEmail = validUsers[name] ? validUsers[name].email : "";
-
-            document.getElementById('fuelLink').href = fuelBaseUrl + "?usp=pp_url&" + 
-                nameEntry + "=" + encodeURIComponent(name) + "&" + 
-                emailEntry + "=" + encodeURIComponent(realEmail);
+            document.getElementById('dailyCheckLink').href = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=" + encodeURIComponent(name);
+            document.getElementById('trailerLink').href = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=" + encodeURIComponent(name);
+            const email = validUsers[name] ? validUsers[name].email : "";
+            document.getElementById('fuelLink').href = "https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=" + encodeURIComponent(name) + "&entry.342429911=" + encodeURIComponent(email);
         }
 
         function logout() { localStorage.clear(); location.reload(); }
-        function openNav() { document.getElementById("sideMenu").style.width = "260px"; }
+        function openNav() { document.getElementById("sideMenu").style.width = "270px"; }
         function closeNav() { document.getElementById("sideMenu").style.width = "0"; }
     </script>
 </body>
