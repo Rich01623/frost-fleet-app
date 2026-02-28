@@ -16,10 +16,36 @@
     <style>
         :root { --fts-red: #E62411; --fts-dark: #2d3436; --bg-color: #f4f7f6; --card-bg: #ffffff; }
         
-        .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 35px; background-color: #000; border-bottom: 2px solid var(--fts-red); z-index: 10001; }
-        .ticker { display: inline-block; white-space: nowrap; height: 35px; line-height: 35px; animation: ticker-move 60s linear infinite; }
-        .ticker__item { display: inline-block; padding: 0 50px; font-size: 13px; color: white; font-weight: bold; text-transform: uppercase; }
-        @keyframes ticker-move { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-33.33%, 0, 0); } }
+        /* FAST INFINITE TICKER */
+        .ticker-wrap { 
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            overflow: hidden; 
+            height: 35px; 
+            background-color: #000; 
+            border-bottom: 2px solid var(--fts-red); 
+            z-index: 10001; 
+        }
+        .ticker { 
+            display: inline-block; 
+            white-space: nowrap; 
+            height: 35px; 
+            line-height: 35px; 
+            animation: ticker-move 25s linear infinite; /* Increased speed from 60s to 25s */
+        }
+        .ticker__item { 
+            display: inline-block; 
+            padding: 0 40px; 
+            font-size: 13px; 
+            color: white; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+        }
+        @keyframes ticker-move { 
+            0% { transform: translateX(0); } 
+            100% { transform: translateX(-50%); } /* Loops perfectly halfway through the duplicated content */
+        }
 
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-box { width: 85%; max-width: 320px; text-align: center; }
@@ -33,6 +59,7 @@
         
         #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 80px; }
         #sideMenu a, .menu-item { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .gate-code { background: rgba(0,0,0,0.2); color: #fff; font-size: 17px; letter-spacing: 1px; }
         .menu-label { color: rgba(255,255,255,0.6); font-size: 11px; padding: 15px 20px 5px; text-transform: uppercase; }
 
         .logo { max-width: 160px; margin: 10px 0 20px 0; }
@@ -67,6 +94,11 @@
                 <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
                 <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
                 <div class="ticker__item">FUEL CARD: BP ROUTEX</div>
+                <div class="ticker__item">OFFICE: 01949 480130</div>
+                <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
+                <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
+                <div class="ticker__item">FUEL CARD: BP ROUTEX</div>
+                <div class="ticker__item">OFFICE: 01949 480130</div>
             </div>
         </div>
 
@@ -74,7 +106,12 @@
         
         <div id="sideMenu">
             <div class="menu-label">Security</div>
-            <div class="menu-item">Gate Code: <b>3684</b></div>
+            <div class="menu-item gate-code">Gate Code: <b>3684</b></div>
+            <div class="menu-label">Support</div>
+            <a href="tel:07701238561">David Jayes</a>
+            <a href="tel:01949480130">Office</a>
+            <div class="menu-label">Driver Tools</div>
+            <a href="https://snapacc.com/map/" target="_blank">Secure Parking (SNAP)</a>
             <div class="menu-label">Account</div>
             <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer;">Log Out</a>
             <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center;">✕ Close Menu</div>
@@ -114,7 +151,7 @@
     </div>
 
     <script>
-        const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzT5QOBo4RbEUOBnF2TxR0ptU12zEgSlGiefX46McGVxo7y_l55Y6X8IqpoZOeplCKtyg/exec";
+        const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-df4hDH5k5-A2hRWwIVIu41DCO4dVo7NkgwsJBhOgHZL6VBUyc0nf3PXhSq-TaaN7uQ/exec";
 
         const validUsers = {
             "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
