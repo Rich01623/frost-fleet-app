@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Frost Fleet Compliance</title>
     <style>
-        :root { --fts-red: #E62411; --fts-dark: #2d3436; --bg-color: #f4f7f6; --card-bg: #ffffff; }
+        :root { --fts-red: #E62411; --fts-dark: #2d3436; --bg-color: #f4f7f6; --card-bg: #ffffff; --night-blue: #34495e; --warning-yellow: #f1c40f; }
         .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 35px; background-color: #000; border-bottom: 2px solid var(--fts-red); z-index: 10001; }
         .ticker { display: inline-block; white-space: nowrap; height: 35px; line-height: 35px; animation: ticker-move 25s linear infinite; }
         .ticker__item { display: inline-block; padding: 0 40px; font-size: 13px; color: white; font-weight: bold; text-transform: uppercase; }
@@ -17,33 +17,35 @@
         .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
         
         #appContent { display: none; width: 100%; flex-direction: column; align-items: center; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 40px; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 100px; }
         header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: white; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         #menuBtn { font-size: 26px; color: var(--fts-red); cursor: pointer; padding: 4px 12px; border: 1px solid #eee; border-radius: 8px; background: white; }
         
-        /* SIDE MENU UPDATED */
         #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 80px; }
         #sideMenu a, .menu-item { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
         
-        /* THE SPECIFIC LABELS YOU REQUESTED */
-        .menu-label { 
-            color: #ffffff !important; 
-            font-size: 13px; 
-            padding: 20px 20px 8px; 
-            text-transform: uppercase; 
-            font-weight: 900; /* Extra Bold */
-            letter-spacing: 1px;
-        }
-
+        .menu-label { color: #ffffff !important; font-size: 13px; padding: 20px 20px 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; }
         .logo { max-width: 160px; margin: 10px 0 20px 0; }
         .welcome-text { font-size: 16px; font-weight: 500; color: #636e72; margin-bottom: 25px; text-transform: capitalize; }
         .container { width: 90%; max-width: 420px; text-align: center; }
         .check-card { background: var(--card-bg); border: 1px solid #e0e6ed; border-top: 4px solid var(--fts-red); border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; text-align: left; }
         .status-badge { font-size: 10px; font-weight: 800; color: #6c757d; background: #f8f9fa; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px; border: 1px solid #dee2e6; }
         .card-title { margin: 0; color: #2d3436; font-size: 19px; font-weight: 700; }
+        
         .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: block; border: none; cursor: pointer; transition: 0.2s; }
         .btn-red { background: var(--fts-red); }
+        .btn-blue { background: var(--night-blue); }
+        .btn:disabled { background: #ccc !important; color: #888 !important; cursor: not-allowed; opacity: 0.6; }
+        
         .shift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .full-width { grid-column: span 2; }
+
+        #shiftReminder { 
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--warning-yellow); 
+            color: #000; text-align: center; padding: 18px 10px; font-weight: 800; 
+            font-size: 15px; z-index: 10002; display: none; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            border-top: 4px solid #000;
+        }
     </style>
 </head>
 <body>
@@ -57,6 +59,9 @@
             <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 15px;">Invalid Credentials.</p>
         </div>
     </div>
+
+    <div id="shiftReminder">⚠️ SHIFT ACTIVE: <span id="shiftDuration">00h 00m</span></div>
+
     <div id="appContent">
         <div class="ticker-wrap"><div class="ticker">
             <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
@@ -72,14 +77,11 @@
         <div id="sideMenu">
             <div class="menu-label">Security</div>
             <div class="menu-item">Gate Code: <b>3684</b></div>
-            
             <div class="menu-label">Support</div>
             <a href="tel:07701238561">David Jayes</a>
             <a href="tel:01949480130">Office</a>
-            
             <div class="menu-label">Account</div>
             <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer;">Log Out</a>
-            
             <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center; opacity: 0.8; font-size: 14px;">✕ Close Menu</div>
         </div>
         <img src="logo.png" class="logo" alt="Frost Haulage">
@@ -89,14 +91,14 @@
                 <div class="status-badge">LIVE GPS TIMECLOCK</div>
                 <h2 class="card-title">Time sheet</h2>
                 <div class="shift-grid">
-                    <button class="btn btn-red" onclick="logShift('START')">START SHIFT</button>
-                    <button class="btn" onclick="logShift('END')">END SHIFT</button>
+                    <button id="startBtn" class="btn btn-red" onclick="logShift('START')">START SHIFT</button>
+                    <button id="endBtn" class="btn" onclick="logShift('END')">END SHIFT</button>
+                    <button id="nightBtn" class="btn btn-blue full-width" onclick="logShift('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
                 </div>
             </div>
             <div class="check-card"><div class="status-badge">DVSA COMPLIANCE</div><h2 class="card-title">Daily Vehicle Check</h2><a href="#" id="dailyCheckLink" class="btn btn-red">Start checks</a></div>
             <div class="check-card" style="border-top-color: var(--fts-dark);"><div class="status-badge">FLEET OPERATIONS</div><h2 class="card-title">Daily trailer checks.</h2><a href="#" id="trailerLink" class="btn">Start checks</a></div>
             <div class="check-card" style="border-top-color: #34495e;"><div class="status-badge">COST MANAGEMENT</div><h2 class="card-title">Fuel Log</h2><a href="#" id="fuelLink" class="btn" style="background: #34495e;">Submit Fuel Entry</a></div>
-            
             <div class="check-card" style="border-top-color: #000000; background: #fff5f5;">
                 <div class="status-badge" style="background: #000; color: #fff;">EMERGENCY RESPONSE</div>
                 <h2 class="card-title">Report an Accident</h2>
@@ -105,7 +107,9 @@
         </div>
     </div>
     <script>
-        const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-df4hDH5k5-A2hRWwIVIu41DCO4dVo7NkgwsJBhOgHZL6VBUyc0nf3PXhSq-TaaN7uQ/exec";
+        // UPDATED GOOGLE SCRIPT URL
+        const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3yR4keAFWgkG_I0YE6xvw9ZgrNJlfdz8l6vnkG66f7PK3Kfkeuh9npOmx1ML6rcx8iA/exec";
+        
         const validUsers = {
             "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
             "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
@@ -125,15 +129,80 @@
             "chris frost": { pass: "cf26", email: "c.frost1fts@gmail.com" }
         };
 
+        let timerInterval;
+
         function logShift(action) {
             const userName = localStorage.getItem("frostUserName");
-            if (confirm("Confirm " + action + " for " + userName + "?")) {
+            const promptMsg = action === 'NIGHT OUT' ? "Confirm Night Out allowance for " : "Confirm " + action + " for ";
+            
+            if (confirm(promptMsg + userName + "?")) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     const loc = position.coords.latitude + "," + position.coords.longitude;
-                    fetch(MY_GOOGLE_SCRIPT_URL + "?name=" + encodeURIComponent(userName) + "&action=" + action + "&location=" + loc, { method: 'GET', mode: 'no-cors' });
+                    
+                    // Creates the Day Name: "Tuesday, 31/03/2026, 23:15:00"
+                    const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                    const fullDayDate = new Date().toLocaleString('en-GB', options);
+                    
+                    fetch(MY_GOOGLE_SCRIPT_URL + "?name=" + encodeURIComponent(userName) + 
+                          "&action=" + action + 
+                          "&location=" + loc + 
+                          "&date=" + encodeURIComponent(fullDayDate), { method: 'GET', mode: 'no-cors' });
+                    
+                    if (action === 'START') {
+                        const now = new Date().getTime();
+                        localStorage.setItem("shiftStartTime", now);
+                        startTimer();
+                    } else if (action === 'END') {
+                        localStorage.removeItem("shiftStartTime");
+                        stopTimer();
+                    }
+                    
                     alert("✅ " + action + " logged.");
                 }, () => alert("❌ GPS Error"), { enableHighAccuracy: true });
             }
+        }
+
+        function toggleButtons(isShiftActive) {
+            document.getElementById('startBtn').disabled = isShiftActive;
+            document.getElementById('endBtn').disabled = !isShiftActive;
+            document.getElementById('nightBtn').disabled = !isShiftActive;
+        }
+
+        function startTimer() {
+            const startTime = localStorage.getItem("shiftStartTime");
+            if (!startTime) {
+                toggleButtons(false);
+                return;
+            }
+
+            toggleButtons(true);
+            document.getElementById('shiftReminder').style.display = "block";
+            
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const diff = now - startTime;
+                const h = Math.floor(diff / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                document.getElementById('shiftDuration').innerText = 
+                    (h < 10 ? "0" + h : h) + "h " + (m < 10 ? "0" + m : m) + "m";
+                
+                if (h >= 12) {
+                    document.getElementById('shiftReminder').style.background = "#e74c3c";
+                    document.getElementById('shiftReminder').style.color = "#fff";
+                } else {
+                    document.getElementById('shiftReminder').style.background = "var(--warning-yellow)";
+                    document.getElementById('shiftReminder').style.color = "#000";
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('shiftReminder').style.display = "none";
+            toggleButtons(false);
         }
 
         function checkLogin() {
@@ -149,6 +218,12 @@
             document.getElementById('loginOverlay').style.display = "none";
             document.getElementById('appContent').style.display = "flex";
             document.getElementById('welcomeUser').innerText = "Session Active: " + name;
+            
+            if (localStorage.getItem("shiftStartTime")) {
+                startTimer();
+            } else {
+                toggleButtons(false);
+            }
 
             document.getElementById('dailyCheckLink').href = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=" + encodeURIComponent(name);
             document.getElementById('trailerLink').href = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=" + encodeURIComponent(name);
@@ -170,4 +245,3 @@
     </script>
 </body>
 </html>
-
