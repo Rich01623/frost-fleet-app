@@ -3,206 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Frost Fleet Compliance</title>
+    <title>Frost Fleet Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        :root { --fts-red: #E62411; --fts-dark: #2d3436; --bg-color: #f4f7f6; --card-bg: #ffffff; --night-blue: #34495e; --warning-yellow: #f1c40f; }
-        .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 35px; background-color: #000; border-bottom: 2px solid var(--fts-red); z-index: 10001; }
-        .ticker { display: inline-block; white-space: nowrap; height: 35px; line-height: 35px; animation: ticker-move 25s linear infinite; }
-        .ticker__item { display: inline-block; padding: 0 40px; font-size: 13px; color: white; font-weight: bold; text-transform: uppercase; }
-        @keyframes ticker-move { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-box { width: 85%; max-width: 320px; text-align: center; }
-        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        
-        #appContent { display: none; width: 100%; flex-direction: column; align-items: center; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 100px; }
-        header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: white; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        #menuBtn { font-size: 26px; color: var(--fts-red); cursor: pointer; padding: 4px 12px; border: 1px solid #eee; border-radius: 8px; background: white; }
-        
-        #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 80px; }
-        #sideMenu a, .menu-item { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        
-        .menu-label { color: #ffffff !important; font-size: 13px; padding: 20px 20px 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; }
-        .logo { max-width: 160px; margin: 10px 0 20px 0; }
-        .welcome-text { font-size: 16px; font-weight: 500; color: #636e72; margin-bottom: 25px; text-transform: capitalize; }
-        .container { width: 90%; max-width: 420px; text-align: center; }
-        .check-card { background: var(--card-bg); border: 1px solid #e0e6ed; border-top: 4px solid var(--fts-red); border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; text-align: left; }
-        .status-badge { font-size: 10px; font-weight: 800; color: #6c757d; background: #f8f9fa; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px; border: 1px solid #dee2e6; }
-        .card-title { margin: 0; color: #2d3436; font-size: 19px; font-weight: 700; }
-        
-        .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: block; border: none; cursor: pointer; transition: 0.2s; }
-        .btn-red { background: var(--fts-red); }
-        .btn-blue { background: var(--night-blue); }
-        .btn:disabled { background: #ccc !important; color: #888 !important; cursor: not-allowed; opacity: 0.6; }
-        
-        .shift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .full-width { grid-column: span 2; }
-
-        #shiftReminder { 
-            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--warning-yellow); 
-            color: #000; text-align: center; padding: 18px 10px; font-weight: 800; 
-            font-size: 15px; z-index: 10002; display: none; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            border-top: 4px solid #000;
+        /* --- DESIGN SYSTEM --- */
+        :root {
+            --primary: #E62411; /* Frost Red */
+            --primary-dark: #b91c0e;
+            --surface: #ffffff;
+            --background: #f1f5f9;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius: 16px;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        body { background-color: var(--background); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; }
+        
+        /* Mobile App Container */
+        .app-container { width: 100%; max-width: 480px; background: var(--background); min-height: 100vh; position: relative; padding-bottom: 80px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+
+        /* --- LOGIN SCREEN --- */
+        #loginScreen { position: absolute; inset: 0; background: var(--surface); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+        .brand-header { text-align: center; margin-bottom: 40px; }
+        .brand-header h1 { color: var(--primary); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        .brand-header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+        .input-group { width: 100%; margin-bottom: 16px; }
+        .input-group input { width: 100%; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; outline: none; transition: 0.2s; }
+        .input-group input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(230, 36, 17, 0.1); }
+        .btn-main { width: 100%; padding: 16px; background: var(--primary); color: white; font-weight: 700; font-size: 16px; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); background: var(--primary-dark); }
+        #loginError { color: var(--danger); font-size: 14px; margin-top: 12px; display: none; font-weight: 500; }
+
+        /* --- DASHBOARD --- */
+        #dashboardScreen { display: none; flex-direction: column; width: 100%; }
+        
+        /* App Header */
+        .top-bar { background: var(--surface); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; }
+        .user-info h2 { font-size: 18px; font-weight: 700; }
+        .user-info p { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .logout-btn { color: var(--danger); background: #fee2e2; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+
+        /* Active Shift Banner */
+        .shift-banner { background: var(--warning); color: #854d0e; padding: 12px 24px; font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; display: none; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .shift-banner.active { display: flex; animation: slideDown 0.3s ease-out; }
+
+        /* Content Grid */
+        .content { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+        /* Cards */
+        .card { background: var(--surface); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02); }
+        .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .card-icon { font-size: 24px; background: var(--background); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+        .card-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
+        .card-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+
+        /* Action Buttons */
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .action-btn { display: flex; align-items: center; justify-content: center; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; text-decoration: none; transition: 0.2s; color: white; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+        .action-btn:active:not(:disabled) { transform: scale(0.97); }
+        
+        .bg-green { background: var(--success); }
+        .bg-red { background: var(--primary); }
+        .bg-blue { background: #3b82f6; }
+        .bg-dark { background: var(--text-main); }
+        .bg-outline { background: transparent; border: 2px solid var(--text-muted); color: var(--text-main); }
+        .full-width { grid-column: 1 / -1; }
+
+        /* Emergency Card */
+        .card-emergency { border: 2px solid #fee2e2; background: #fff5f5; }
+
+        /* Toast Notification */
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: white; padding: 16px 24px; border-radius: 30px; font-weight: 600; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000; white-space: nowrap; }
+        #toast.show { bottom: 30px; }
+
+        @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
-    <div id="loginOverlay">
-        <img src="logo.png" class="logo" alt="Frost Haulage">
-        <div class="login-box">
-            <h3 style="color: var(--fts-red); margin-bottom: 20px;">Fleet Portal Access</h3>
-            <input type="text" id="username" placeholder="Full Name">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="checkLogin()">Login</button>
-            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 15px;">Invalid Credentials.</p>
-        </div>
-    </div>
 
-    <div id="shiftReminder">⚠️ SHIFT ACTIVE: <span id="shiftDuration">00h 00m</span></div>
-
-    <div id="appContent">
-        <div class="ticker-wrap"><div class="ticker">
-            <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
-            <div class="ticker__item">OFFICE: 01949 480130</div>
-            <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
-        </div></div>
-        <header><div id="menuBtn" onclick="openNav()">☰</div></header>
-        <div id="sideMenu">
-            <div class="menu-label">Security</div>
-            <div class="menu-item">Gate Code: <b>3684</b></div>
-            <div class="menu-label">Support Management</div>
-            <a href="tel:07701238561">David Jayes</a>
-            <a href="tel:01949480130">Office</a>
-            <div class="menu-label">Account</div>
-            <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer;">Log Out</a>
-            <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center; opacity: 0.8; font-size: 14px;">✕ Close Menu</div>
+    <div class="app-container">
+        
+        <div id="loginScreen">
+            <div class="brand-header">
+                <h1>FROST HAULAGE</h1>
+                <p>Fleet Management Portal</p>
+            </div>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Driver Name (e.g. Andy West)">
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Passcode">
+            </div>
+            <button class="btn-main" onclick="app.login()">SECURE LOGIN</button>
+            <p id="loginError">Invalid name or passcode.</p>
         </div>
-        <img src="logo.png" class="logo" alt="Frost Haulage">
-        <div id="welcomeUser" class="welcome-text"></div>
-        <div class="container">
-            <div class="check-card">
-                <div class="status-badge">LIVE GPS TIMECLOCK</div>
-                <h2 class="card-title">Time sheet</h2>
-                <div class="shift-grid">
-                    <button id="startBtn" class="btn btn-red" onclick="logShift('START')">START SHIFT</button>
-                    <button id="endBtn" class="btn" onclick="logShift('END')">END SHIFT</button>
-                    <button id="nightBtn" class="btn btn-blue full-width" onclick="logShift('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
+
+        <div id="dashboardScreen">
+            <header class="top-bar">
+                <div class="user-info">
+                    <h2 id="ui-driver-name">Driver Name</h2>
+                    <p>Verified Operator</p>
                 </div>
+                <button class="logout-btn" onclick="app.logout()">Logout</button>
+            </header>
+
+            <div id="shiftBanner" class="shift-banner">
+                <span>⚠️ SHIFT ACTIVE</span>
+                <span id="shiftTimer">00h 00m</span>
             </div>
-            <div class="check-card"><h2 class="card-title">Daily Vehicle Check</h2><a href="#" id="dailyCheckLink" class="btn btn-red">Start checks</a></div>
-            <div class="check-card"><h2 class="card-title">Daily trailer checks.</h2><a href="#" id="trailerLink" class="btn">Start checks</a></div>
-            <div class="check-card"><h2 class="card-title">Fuel Log</h2><a href="#" id="fuelLink" class="btn" style="background: #34495e;">Submit Fuel Entry</a></div>
-            <div class="check-card" style="background: #fff5f5;">
-                <h2 class="card-title">Report an Accident</h2>
-                <a href="#" id="accidentLink" target="_blank" class="btn" style="background: #000; margin-top:15px;">I'VE HAD AN ACCIDENT</a>
+
+            <div class="content">
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">⏱️</div>
+                        <div>
+                            <div class="card-title">Time Sheet</div>
+                            <div class="card-subtitle">GPS Monitored & Synced</div>
+                        </div>
+                    </div>
+                    <div class="action-grid">
+                        <button id="btnStart" class="action-btn bg-green" onclick="app.logAction('START')">START SHIFT</button>
+                        <button id="btnEnd" class="action-btn bg-red" onclick="app.logAction('END')">END SHIFT</button>
+                        <button id="btnNight" class="action-btn bg-blue full-width" onclick="app.logAction('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">📋</div>
+                        <div>
+                            <div class="card-title">Daily Compliance</div>
+                            <div class="card-subtitle">DVSA Required Checks</div>
+                        </div>
+                    </div>
+                    <div class="action-grid">
+                        <a href="#" id="linkDaily" class="action-btn bg-dark">Vehicle Check</a>
+                        <a href="#" id="linkTrailer" class="action-btn bg-outline">Trailer Check</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">⛽</div>
+                        <div>
+                            <div class="card-title">Fuel & Expenses</div>
+                            <div class="card-subtitle">Log receipts and top-ups</div>
+                        </div>
+                    </div>
+                    <a href="#" id="linkFuel" class="action-btn bg-dark full-width">Submit Fuel Entry</a>
+                </div>
+
+                <div class="card card-emergency">
+                    <div class="card-header">
+                        <div class="card-icon">🚨</div>
+                        <div>
+                            <div class="card-title" style="color: var(--danger);">Emergency Response</div>
+                            <div class="card-subtitle">Report incidents immediately</div>
+                        </div>
+                    </div>
+                    <button class="action-btn bg-red full-width" onclick="app.reportAccident()">I'VE HAD AN ACCIDENT</button>
+                </div>
+
             </div>
         </div>
     </div>
+
+    <div id="toast">✅ Action Successful</div>
 
     <script>
-        // SUPABASE CONNECTION
-        var S_URL = "https://mbudwnwxucluwgbkgbfx.supabase.co";
-        var S_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idWR3bnd4dWNsdXdnYmtnYmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDQwMjYsImV4cCI6MjA5MDc4MDAyNn0.xFv-FiQ894vdfJuQYWQyF4WzQXmlnmnKvz_c8nuzl5Q";
-        var supabase = window.supabase.createClient(S_URL, S_KEY);
-        var GOOGLE_URL = "https://script.google.com/macros/s/AKfycbx3yR4keAFWgkG_I0YE6xvw9ZgrNJlfdz8l6vnkG66f7PK3Kfkeuh9npOmx1ML6rcx8iA/exec";
-
-        var validUsers = {
-            "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
-            "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
-            "andy west": { pass: "aw26", email: "a.west1fts@gmail.com" },
-            "callum lee": { pass: "ca26", email: "c.lee1fts@gmail.com" },
-            "ian bason": { pass: "ib26", email: "i.bason1fts@gmail.com" },
-            "josh harrison": { pass: "jh26", email: "j.harrison1fts@gmail.com" },
-            "lee woodcock": { pass: "lw26", email: "l.woodcock1fts@gmail.com" },
-            "marc wickham": { pass: "mw26", email: "m.wickham1fts@gmail.com" },
-            "neil wood": { pass: "nw26", email: "n.wood1fts@gmail.com" },
-            "richard spence": { pass: "rs26", email: "r.spence1fts@gmail.com" },
-            "roy taylor": { pass: "rt26", email: "r.taylor1fts@gmail.com" },
-            "stuart sleigh": { pass: "ss26", email: "s.sleigh1fts@gmail.com" },
-            "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" },
-            "richard robinson": { pass: "rr26", email: "robinson01623@gmail.com" },
-            "jon hulbert": { pass: "jh26", email: "j.hulbert1fts@gmail.com" },
-            "chris frost": { pass: "cf26", email: "c.frost1fts@gmail.com" }
+        // --- CONFIGURATION ---
+        const CONFIG = {
+            supabaseUrl: "https://mbudwnwxucluwgbkgbfx.supabase.co",
+            supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idWR3bnd4dWNsdXdnYmtnYmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDQwMjYsImV4cCI6MjA5MDc4MDAyNn0.xFv-FiQ894vdfJuQYWQyF4WzQXmlnmnKvz_c8nuzl5Q",
+            googleUrl: "https://script.google.com/macros/s/AKfycbx3yR4keAFWgkG_I0YE6xvw9ZgrNJlfdz8l6vnkG66f7PK3Kfkeuh9npOmx1ML6rcx8iA/exec",
+            users: {
+                "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
+                "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
+                "andy west": { pass: "aw26", email: "a.west1fts@gmail.com" },
+                "callum lee": { pass: "ca26", email: "c.lee1fts@gmail.com" },
+                "ian bason": { pass: "ib26", email: "i.bason1fts@gmail.com" },
+                "josh harrison": { pass: "jh26", email: "j.harrison1fts@gmail.com" },
+                "lee woodcock": { pass: "lw26", email: "l.woodcock1fts@gmail.com" },
+                "marc wickham": { pass: "mw26", email: "m.wickham1fts@gmail.com" },
+                "neil wood": { pass: "nw26", email: "n.wood1fts@gmail.com" },
+                "richard spence": { pass: "rs26", email: "r.spence1fts@gmail.com" },
+                "roy taylor": { pass: "rt26", email: "r.taylor1fts@gmail.com" },
+                "stuart sleigh": { pass: "ss26", email: "s.sleigh1fts@gmail.com" },
+                "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" },
+                "richard robinson": { pass: "rr26", email: "robinson01623@gmail.com" },
+                "jon hulbert": { pass: "jh26", email: "j.hulbert1fts@gmail.com" },
+                "chris frost": { pass: "cf26", email: "c.frost1fts@gmail.com" }
+            }
         };
 
-        var timerInterval;
+        // Initialize Supabase safely
+        const supabase = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
 
-        function checkLogin() {
-            var u = document.getElementById('username').value.toLowerCase().trim();
-            var p = document.getElementById('password').value.trim();
-            if (validUsers[u] && validUsers[u].pass === p) {
-                localStorage.setItem("frostLoggedIn", "true");
-                localStorage.setItem("frostUserName", u);
-                showDashboard(u);
-            } else { document.getElementById('errorMsg').style.display = "block"; }
-        }
-
-        function showDashboard(name) {
-            document.getElementById('loginOverlay').style.display = "none";
-            document.getElementById('appContent').style.display = "flex";
-            document.getElementById('welcomeUser').innerText = "Session Active: " + name;
+        // --- MAIN APP LOGIC ---
+        const app = {
+            timerInterval: null,
             
-            if (localStorage.getItem("shiftStartTime")) startTimer();
-            else toggleButtons(false);
+            init: function() {
+                const activeUser = localStorage.getItem("fts_user");
+                if (activeUser) {
+                    this.loadDashboard(activeUser);
+                }
+            },
 
-            // FORM LINKS
-            document.getElementById('dailyCheckLink').href = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=" + encodeURIComponent(name);
-            document.getElementById('trailerLink').href = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=" + encodeURIComponent(name);
-            var email = validUsers[name] ? validUsers[name].email : "";
-            document.getElementById('fuelLink').href = "https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=" + encodeURIComponent(name) + "&entry.342429911=" + encodeURIComponent(email);
-        }
+            login: function() {
+                const u = document.getElementById('username').value.toLowerCase().trim();
+                const p = document.getElementById('password').value.trim();
+                
+                if (CONFIG.users[u] && CONFIG.users[u].pass === p) {
+                    localStorage.setItem("fts_user", u);
+                    document.getElementById('loginError').style.display = 'none';
+                    this.loadDashboard(u);
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            },
 
-        function logShift(action) {
-            var user = localStorage.getItem("frostUserName");
-            if (!confirm("Confirm " + action + " for " + user + "?")) return;
+            logout: function() {
+                localStorage.removeItem("fts_user");
+                localStorage.removeItem("fts_shiftStart");
+                location.reload();
+            },
 
-            navigator.geolocation.getCurrentPosition(function(pos) {
-                var loc = pos.coords.latitude + "," + pos.coords.longitude;
-                var now = new Date();
-                var day = new Intl.DateTimeFormat('en-GB', { weekday: 'long' }).format(now);
-                var fullDate = day + ", " + now.toLocaleString('en-GB');
+            loadDashboard: function(username) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboardScreen').style.display = 'flex';
+                
+                // Format name nicely (e.g., andy west -> Andy West)
+                const niceName = username.replace(/\b\w/g, l => l.toUpperCase());
+                document.getElementById('ui-driver-name').innerText = niceName;
 
-                // 1. SEND TO GOOGLE
-                fetch(GOOGLE_URL + "?name=" + encodeURIComponent(user) + "&action=" + action + "&location=" + loc + "&date=" + encodeURIComponent(fullDate), { mode: 'no-cors' });
+                this.generateFormLinks(username);
+                
+                // Check shift state
+                if (localStorage.getItem("fts_shiftStart")) {
+                    this.startTimerUI();
+                } else {
+                    this.updateButtonsUI(false);
+                }
+            },
 
-                // 2. SEND TO SUPABASE
-                supabase.from('shift_logs').insert([{ driver_name: user, action: action, location: loc, day_name: day }])
-                .then(function() {
-                    if (action === 'START') {
-                        localStorage.setItem("shiftStartTime", now.getTime());
-                        startTimer();
-                    } else if (action === 'END') {
-                        localStorage.removeItem("shiftStartTime");
-                        stopTimer();
-                    }
-                    alert("✅ Logged: " + action);
+            generateFormLinks: function(username) {
+                const email = CONFIG.users[username].email;
+                const encodedName = encodeURIComponent(username);
+                const encodedEmail = encodeURIComponent(email);
+
+                document.getElementById('linkDaily').href = `https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=${encodedName}`;
+                document.getElementById('linkTrailer').href = `https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=${encodedName}`;
+                document.getElementById('linkFuel').href = `https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=${encodedName}&entry.342429911=${encodedEmail}`;
+            },
+
+            reportAccident: function() {
+                const username = localStorage.getItem("fts_user");
+                if(!confirm("Emergency Accident Report. Continue?")) return;
+                
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    const loc = pos.coords.latitude + "," + pos.coords.longitude;
+                    const url = `https://docs.google.com/forms/d/e/1FAIpQLScl710GSdBs7HWOOX_2CPKksm3N_Or9qotBZiAEa1YRXOSVSQ/viewform?usp=pp_url&entry.34060707=${encodeURIComponent(username)}&entry.1213289053=${encodeURIComponent(loc)}`;
+                    window.open(url, '_blank');
+                }, function() {
+                    alert("Please enable GPS to report exact location.");
                 });
-            }, function() { alert("GPS Error"); });
-        }
+            },
 
-        function startTimer() {
-            var start = localStorage.getItem("shiftStartTime");
-            if (!start) return;
-            toggleButtons(true);
-            document.getElementById('shiftReminder').style.display = "block";
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(function() {
-                var diff = new Date().getTime() - start;
-                var h = Math.floor(diff / 3600000);
-                var m = Math.floor((diff % 3600000) / 60000);
-                document.getElementById('shiftDuration').innerText = (h < 10 ? "0"+h : h) + "h " + (m < 10 ? "0"+m : m) + "m";
-            }, 1000);
-        }
+            logAction: function(actionType) {
+                const username = localStorage.getItem("fts_user");
+                
+                if (!confirm(`Confirm ${actionType}?`)) return;
 
-        function stopTimer() { clearInterval(timerInterval); document.getElementById('shiftReminder').style.display = "none"; toggleButtons(false); }
-        function toggleButtons(active) { document.getElementById('startBtn').disabled = active; document.getElementById('endBtn').disabled = !active; }
-        function logout() { localStorage.clear(); location.reload(); }
-        function openNav() { document.getElementById("sideMenu").style.width = "270px"; }
-        function closeNav() { document.getElementById("sideMenu").style.width = "0"; }
-        window.onload = function() { if (localStorage.getItem("frostLoggedIn") === "true") showDashboard(localStorage.getItem("frostUserName")); };
+                // UI Feedback - Change button text
+                let btnId = actionType === 'START' ? 'btnStart' : (actionType === 'END' ? 'btnEnd' : 'btnNight');
+                let originalText = document.getElementById(btnId).innerText;
+                document.getElementById(btnId).innerText = "Logging...";
+                document.getElementById(btnId).disabled = true;
+
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    const loc = pos.coords.latitude + "," + pos.coords.longitude;
+                    const now = new Date();
+                    const day = new Intl.DateTimeFormat('en-GB', { weekday: 'long' }).format(now);
+                    const fullDate = day + ", " + now.toLocaleString('en-GB');
+
+                    // 1. Silent Ping to Google Sheets
+                    fetch(`${CONFIG.googleUrl}?name=${encodeURIComponent(username)}&action=${actionType}&location=${loc}&date=${encodeURIComponent(fullDate)}`, { mode: 'no-cors' });
+
+                    // 2. Official Record to Supabase
+                    supabase.from('shift_logs').insert([
+                        { driver_name: username, action: actionType, location: loc, day_name: day }
+                    ]).then(function() {
+                        
+                        // Handle State
+                        if (actionType === 'START') {
+                            localStorage.setItem("fts_shiftStart", new Date().getTime());
+                            app.startTimerUI();
+                        } else if (actionType === 'END') {
+                            localStorage.removeItem("fts_shiftStart");
+                            app.stopTimerUI();
+                        }
+
+                        // Reset button text & show success Toast
+                        document.getElementById(btnId).innerText = originalText;
+                        app.showToast(`✅ ${actionType} recorded successfully`);
+
+                    }).catch(function(err) {
+                        alert("Database connection error. Try again.");
+                        document.getElementById(btnId).innerText = originalText;
+                        document.getElementById(btnId).disabled = false;
+                    });
+
+                }, function() {
+                    alert("GPS is required to log a shift. Please enable Location Services.");
+                    document.getElementById(btnId).innerText = originalText;
+                    document.getElementById(btnId).disabled = false;
+                }, { enableHighAccuracy: true });
+            },
+
+            startTimerUI: function() {
+                this.updateButtonsUI(true);
+                const banner = document.getElementById('shiftBanner');
+                banner.classList.add('active');
+
+                const startTime = localStorage.getItem("fts_shiftStart");
+                
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                
+                this.timerInterval = setInterval(() => {
+                    const diff = new Date().getTime() - startTime;
+                    const h = Math.floor(diff / 3600000);
+                    const m = Math.floor((diff % 3600000) / 60000);
+                    document.getElementById('shiftTimer').innerText = (h < 10 ? "0"+h : h) + "h " + (m < 10 ? "0"+m : m) + "m";
+                    
+                    // Warning if over 12 hours
+                    if (h >= 12) {
+                        banner.style.background = "var(--danger)";
+                        banner.style.color = "white";
+                    }
+                }, 1000);
+            },
+
+            stopTimerUI: function() {
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                document.getElementById('shiftBanner').classList.remove('active');
+                this.updateButtonsUI(false);
+            },
+
+            updateButtonsUI: function(isShiftActive) {
+                document.getElementById('btnStart').disabled = isShiftActive;
+                document.getElementById('btnEnd').disabled = !isShiftActive;
+                document.getElementById('btnNight').disabled = !isShiftActive;
+            },
+
+            showToast: function(message) {
+                const toast = document.getElementById('toast');
+                toast.innerText = message;
+                toast.classList.add('show');
+                setTimeout(() => { toast.classList.remove('show'); }, 3000);
+            }
+        };
+
+        // Boot up the app on page load
+        window.onload = function() { app.init(); };
+
     </script>
 </body>
 </html>
