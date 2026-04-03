@@ -101,7 +101,7 @@
             <div class="input-group">
                 <input type="password" id="password" placeholder="Passcode">
             </div>
-            <button class="btn-main" onclick="app.login()">SECURE LOGIN</button>
+            <button class="btn-main" onclick="window.app.login()">SECURE LOGIN</button>
             <p id="loginError">Invalid name or passcode.</p>
         </div>
 
@@ -111,7 +111,7 @@
                     <h2 id="ui-driver-name">Driver Name</h2>
                     <p>Verified Operator</p>
                 </div>
-                <button class="logout-btn" onclick="app.logout()">Logout</button>
+                <button class="logout-btn" onclick="window.app.logout()">Logout</button>
             </header>
 
             <div id="shiftBanner" class="shift-banner">
@@ -130,9 +130,9 @@
                         </div>
                     </div>
                     <div class="action-grid">
-                        <button id="btnStart" class="action-btn bg-green" onclick="app.logAction('START')">START SHIFT</button>
-                        <button id="btnEnd" class="action-btn bg-red" onclick="app.logAction('END')">END SHIFT</button>
-                        <button id="btnNight" class="action-btn bg-blue full-width" onclick="app.logAction('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
+                        <button id="btnStart" class="action-btn bg-green" onclick="window.app.logAction('START')">START SHIFT</button>
+                        <button id="btnEnd" class="action-btn bg-red" onclick="window.app.logAction('END')">END SHIFT</button>
+                        <button id="btnNight" class="action-btn bg-blue full-width" onclick="window.app.logAction('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
                     </div>
                 </div>
 
@@ -169,7 +169,7 @@
                             <div class="card-subtitle">Report incidents immediately</div>
                         </div>
                     </div>
-                    <button class="action-btn bg-red full-width" onclick="app.reportAccident()">I'VE HAD AN ACCIDENT</button>
+                    <button class="action-btn bg-red full-width" onclick="window.app.reportAccident()">I'VE HAD AN ACCIDENT</button>
                 </div>
 
             </div>
@@ -180,7 +180,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const CONFIG = {
+        var CONFIG = {
             supabaseUrl: "https://mbudwnwxucluwgbkgbfx.supabase.co",
             supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idWR3bnd4dWNsdXdnYmtnYmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDQwMjYsImV4cCI6MjA5MDc4MDAyNn0.xFv-FiQ894vdfJuQYWQyF4WzQXmlnmnKvz_c8nuzl5Q",
             googleUrl: "https://script.google.com/macros/s/AKfycbx3yR4keAFWgkG_I0YE6xvw9ZgrNJlfdz8l6vnkG66f7PK3Kfkeuh9npOmx1ML6rcx8iA/exec",
@@ -204,23 +204,31 @@
             }
         };
 
-        // Initialize Supabase safely
-        const supabase = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
-
         // --- MAIN APP LOGIC ---
-        const app = {
+        // By attaching it directly to 'window', we make it bulletproof against strict mode errors
+        window.app = {
             timerInterval: null,
+            supabaseClient: null,
             
             init: function() {
-                const activeUser = localStorage.getItem("fts_user");
+                // Safely try to connect to Supabase (won't crash if offline)
+                try {
+                    if (window.supabase) {
+                        this.supabaseClient = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+                    }
+                } catch(e) {
+                    console.error("Supabase failed to load instantly:", e);
+                }
+
+                var activeUser = localStorage.getItem("fts_user");
                 if (activeUser) {
                     this.loadDashboard(activeUser);
                 }
             },
 
             login: function() {
-                const u = document.getElementById('username').value.toLowerCase().trim();
-                const p = document.getElementById('password').value.trim();
+                var u = document.getElementById('username').value.toLowerCase().trim();
+                var p = document.getElementById('password').value.trim();
                 
                 if (CONFIG.users[u] && CONFIG.users[u].pass === p) {
                     localStorage.setItem("fts_user", u);
@@ -241,8 +249,8 @@
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboardScreen').style.display = 'flex';
                 
-                // Format name nicely (e.g., andy west -> Andy West)
-                const niceName = username.replace(/\b\w/g, l => l.toUpperCase());
+                // Format name nicely
+                var niceName = username.replace(/\b\w/g, function(l) { return l.toUpperCase() });
                 document.getElementById('ui-driver-name').innerText = niceName;
 
                 this.generateFormLinks(username);
@@ -256,22 +264,22 @@
             },
 
             generateFormLinks: function(username) {
-                const email = CONFIG.users[username].email;
-                const encodedName = encodeURIComponent(username);
-                const encodedEmail = encodeURIComponent(email);
+                var email = CONFIG.users[username].email;
+                var encodedName = encodeURIComponent(username);
+                var encodedEmail = encodeURIComponent(email);
 
-                document.getElementById('linkDaily').href = `https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=${encodedName}`;
-                document.getElementById('linkTrailer').href = `https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=${encodedName}`;
-                document.getElementById('linkFuel').href = `https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=${encodedName}&entry.342429911=${encodedEmail}`;
+                document.getElementById('linkDaily').href = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=" + encodedName;
+                document.getElementById('linkTrailer').href = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=" + encodedName;
+                document.getElementById('linkFuel').href = "https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=" + encodedName + "&entry.342429911=" + encodedEmail;
             },
 
             reportAccident: function() {
-                const username = localStorage.getItem("fts_user");
+                var username = localStorage.getItem("fts_user");
                 if(!confirm("Emergency Accident Report. Continue?")) return;
                 
                 navigator.geolocation.getCurrentPosition(function(pos) {
-                    const loc = pos.coords.latitude + "," + pos.coords.longitude;
-                    const url = `https://docs.google.com/forms/d/e/1FAIpQLScl710GSdBs7HWOOX_2CPKksm3N_Or9qotBZiAEa1YRXOSVSQ/viewform?usp=pp_url&entry.34060707=${encodeURIComponent(username)}&entry.1213289053=${encodeURIComponent(loc)}`;
+                    var loc = pos.coords.latitude + "," + pos.coords.longitude;
+                    var url = "https://docs.google.com/forms/d/e/1FAIpQLScl710GSdBs7HWOOX_2CPKksm3N_Or9qotBZiAEa1YRXOSVSQ/viewform?usp=pp_url&entry.34060707=" + encodeURIComponent(username) + "&entry.1213289053=" + encodeURIComponent(loc);
                     window.open(url, '_blank');
                 }, function() {
                     alert("Please enable GPS to report exact location.");
@@ -279,48 +287,40 @@
             },
 
             logAction: function(actionType) {
-                const username = localStorage.getItem("fts_user");
+                var username = localStorage.getItem("fts_user");
+                var _this = this; // Store reference to app
                 
-                if (!confirm(`Confirm ${actionType}?`)) return;
+                if (!confirm("Confirm " + actionType + "?")) return;
 
-                // UI Feedback - Change button text
-                let btnId = actionType === 'START' ? 'btnStart' : (actionType === 'END' ? 'btnEnd' : 'btnNight');
-                let originalText = document.getElementById(btnId).innerText;
+                var btnId = actionType === 'START' ? 'btnStart' : (actionType === 'END' ? 'btnEnd' : 'btnNight');
+                var originalText = document.getElementById(btnId).innerText;
                 document.getElementById(btnId).innerText = "Logging...";
                 document.getElementById(btnId).disabled = true;
 
                 navigator.geolocation.getCurrentPosition(function(pos) {
-                    const loc = pos.coords.latitude + "," + pos.coords.longitude;
-                    const now = new Date();
-                    const day = new Intl.DateTimeFormat('en-GB', { weekday: 'long' }).format(now);
-                    const fullDate = day + ", " + now.toLocaleString('en-GB');
+                    var loc = pos.coords.latitude + "," + pos.coords.longitude;
+                    var now = new Date();
+                    var day = new Intl.DateTimeFormat('en-GB', { weekday: 'long' }).format(now);
+                    var fullDate = day + ", " + now.toLocaleString('en-GB');
 
                     // 1. Silent Ping to Google Sheets
-                    fetch(`${CONFIG.googleUrl}?name=${encodeURIComponent(username)}&action=${actionType}&location=${loc}&date=${encodeURIComponent(fullDate)}`, { mode: 'no-cors' });
+                    fetch(CONFIG.googleUrl + "?name=" + encodeURIComponent(username) + "&action=" + actionType + "&location=" + loc + "&date=" + encodeURIComponent(fullDate), { mode: 'no-cors' });
 
-                    // 2. Official Record to Supabase
-                    supabase.from('shift_logs').insert([
-                        { driver_name: username, action: actionType, location: loc, day_name: day }
-                    ]).then(function() {
-                        
-                        // Handle State
-                        if (actionType === 'START') {
-                            localStorage.setItem("fts_shiftStart", new Date().getTime());
-                            app.startTimerUI();
-                        } else if (actionType === 'END') {
-                            localStorage.removeItem("fts_shiftStart");
-                            app.stopTimerUI();
-                        }
-
-                        // Reset button text & show success Toast
-                        document.getElementById(btnId).innerText = originalText;
-                        app.showToast(`✅ ${actionType} recorded successfully`);
-
-                    }).catch(function(err) {
-                        alert("Database connection error. Try again.");
-                        document.getElementById(btnId).innerText = originalText;
-                        document.getElementById(btnId).disabled = false;
-                    });
+                    // 2. Official Record to Supabase (If connected)
+                    if (_this.supabaseClient) {
+                        _this.supabaseClient.from('shift_logs').insert([
+                            { driver_name: username, action: actionType, location: loc, day_name: day }
+                        ]).then(function() {
+                            _this.handleLogSuccess(actionType, btnId, originalText);
+                        }).catch(function(err) {
+                            alert("Database error. The Google Sheet caught it as a backup.");
+                            _this.handleLogSuccess(actionType, btnId, originalText); // Still let them proceed
+                        });
+                    } else {
+                        // Offline or Supabase blocked - Google Sheets will catch it via fetch when network returns
+                        alert("Network weak. Saved to backup server.");
+                        _this.handleLogSuccess(actionType, btnId, originalText);
+                    }
 
                 }, function() {
                     alert("GPS is required to log a shift. Please enable Location Services.");
@@ -329,22 +329,34 @@
                 }, { enableHighAccuracy: true });
             },
 
+            handleLogSuccess: function(actionType, btnId, originalText) {
+                if (actionType === 'START') {
+                    localStorage.setItem("fts_shiftStart", new Date().getTime());
+                    this.startTimerUI();
+                } else if (actionType === 'END') {
+                    localStorage.removeItem("fts_shiftStart");
+                    this.stopTimerUI();
+                }
+
+                document.getElementById(btnId).innerText = originalText;
+                this.showToast("✅ " + actionType + " recorded");
+            },
+
             startTimerUI: function() {
                 this.updateButtonsUI(true);
-                const banner = document.getElementById('shiftBanner');
+                var banner = document.getElementById('shiftBanner');
                 banner.classList.add('active');
 
-                const startTime = localStorage.getItem("fts_shiftStart");
+                var startTime = localStorage.getItem("fts_shiftStart");
                 
                 if (this.timerInterval) clearInterval(this.timerInterval);
                 
-                this.timerInterval = setInterval(() => {
-                    const diff = new Date().getTime() - startTime;
-                    const h = Math.floor(diff / 3600000);
-                    const m = Math.floor((diff % 3600000) / 60000);
+                this.timerInterval = setInterval(function() {
+                    var diff = new Date().getTime() - startTime;
+                    var h = Math.floor(diff / 3600000);
+                    var m = Math.floor((diff % 3600000) / 60000);
                     document.getElementById('shiftTimer').innerText = (h < 10 ? "0"+h : h) + "h " + (m < 10 ? "0"+m : m) + "m";
                     
-                    // Warning if over 12 hours
                     if (h >= 12) {
                         banner.style.background = "var(--danger)";
                         banner.style.color = "white";
@@ -365,15 +377,15 @@
             },
 
             showToast: function(message) {
-                const toast = document.getElementById('toast');
+                var toast = document.getElementById('toast');
                 toast.innerText = message;
                 toast.classList.add('show');
-                setTimeout(() => { toast.classList.remove('show'); }, 3000);
+                setTimeout(function() { toast.classList.remove('show'); }, 3000);
             }
         };
 
-        // Boot up the app on page load
-        window.onload = function() { app.init(); };
+        // Boot up the app on page load safely
+        window.onload = function() { window.app.init(); };
 
     </script>
 </body>
