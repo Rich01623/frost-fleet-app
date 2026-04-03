@@ -12,16 +12,14 @@
         .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e2e8f0; }
         .status-badge { text-align: center; font-weight: 800; padding: 12px; border-radius: 8px; margin: 15px 0; text-transform: uppercase; letter-spacing: 1px; }
         button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 12px; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
         input[type="text"], input[type="number"], input[type="email"], input[type="password"] { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         .hidden { display: none; }
-        
-        /* Defect Checklist Styling */
         .check-container { background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 12px; margin-top: 10px; }
         .defect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
         .defect-item { display: flex; align-items: center; gap: 10px; font-size: 14px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; }
         .defect-item input { width: 18px; height: 18px; margin: 0; }
-        
-        #msg { text-align: center; font-size: 13px; color: #64748b; margin-top: 15px; min-height: 20px; }
+        #msg { text-align: center; font-size: 13px; color: #64748b; margin-top: 15px; min-height: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -60,7 +58,7 @@
                         <label class="defect-item"><input type="checkbox" value="Load Security"> Load Sec.</label>
                     </div>
 
-                    <button style="background:var(--dark); color:white" onclick="submitVehicleCheck()">Complete & Save Inspection</button>
+                    <button id="submit-inspection-btn" style="background:var(--dark); color:white" onclick="submitVehicleCheck()">Complete & Save Inspection</button>
                 </div>
             </div>
 
@@ -70,7 +68,7 @@
             </div>
 
             <p id="msg"></p>
-            <button onclick="handleLogout()" style="background:none; color:var(--danger); font-size:12px; margin-top:20px; text-decoration:underline; border:none; width:auto; display:block; margin-left:auto; margin-right:auto;">Logout Device</button>
+            <button onclick="handleLogout()" style="background:none; color:var(--danger); font-size:12px; margin:20px auto 0 auto; text-decoration:underline; border:none; display:block;">Logout Device</button>
         </div>
     </div>
 </div>
@@ -107,7 +105,7 @@
     }
 
     async function checkStatus() {
-        const { data } = await _supabase.from('shift_logs')
+        const { data, error } = await _supabase.from('shift_logs')
             .select('*')
             .eq('driver_name', currentUser.email)
             .order('created_at', { ascending: false })
@@ -119,7 +117,7 @@
         const activeUi = document.getElementById('active-shift-ui');
 
         if (data && data.length > 0 && data[0].action === 'Start Shift') {
-            currentShiftId = data[0].id;
+            currentShiftId = data[0].id; // CRITICAL: Captures the ID for the update
             statusDiv.innerText = "ON DUTY (LOGGED)";
             statusDiv.style.background = "#16a34a"; statusDiv.style.color = "white";
             startBtn.classList.add('hidden');
@@ -142,51 +140,61 @@
     }
 
     async function logAction(type) {
-        document.getElementById('msg').innerText = "📍 Getting location...";
+        document.getElementById('msg').innerText = "📍 Accessing GPS...";
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const { latitude, longitude } = pos.coords;
-            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_KEY}`);
-            const geo = await res.json();
-            const addr = geo.results[0]?.formatted_address || "Unknown Location";
+            try {
+                const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_KEY}`);
+                const geo = await res.json();
+                const addr = geo.results[0]?.formatted_address || "Unknown Location";
 
-            const { error } = await _supabase.from('shift_logs').insert([{
-                driver_name: currentUser.email,
-                action: type,
-                location: addr, lat: latitude, lng: longitude,
-                day_name: new Date().toLocaleDateString('en-GB', { weekday: 'long' }),
-                is_night_out: isNightOut
-            }]);
+                const { error } = await _supabase.from('shift_logs').insert([{
+                    driver_name: currentUser.email,
+                    action: type,
+                    location: addr, lat: latitude, lng: longitude,
+                    day_name: new Date().toLocaleDateString('en-GB', { weekday: 'long' }),
+                    is_night_out: isNightOut
+                }]);
 
-            if (error) alert("Log Error: " + error.message);
-            else {
-                document.getElementById('msg').innerText = `✅ Logged ${type} at ${new Date().toLocaleTimeString()}`;
+                if (error) throw error;
+                document.getElementById('msg').innerText = `✅ Logged ${type}`;
                 checkStatus();
+            } catch (err) {
+                alert("Log Error: " + err.message);
             }
-        }, (err) => {
-            alert("Location error. Please enable GPS.");
-        });
+        }, (err) => alert("Please allow location access."));
     }
 
     async function submitVehicleCheck() {
+        const btn = document.getElementById('submit-inspection-btn');
         const reg = document.getElementById('reg-no').value;
         const miles = document.getElementById('mileage').value;
         const checkedBoxes = document.querySelectorAll('#defect-list input:checked');
         let defectsFound = Array.from(checkedBoxes).map(cb => cb.value);
 
-        if (!reg || !miles) return alert("Registration and Mileage are required.");
+        if (!reg || !miles) return alert("Please enter Reg and Mileage.");
         if (defectsFound.length === 0) defectsFound = ["No Defects"];
+
+        btn.innerText = "Saving...";
+        btn.disabled = true;
 
         const { error } = await _supabase.from('shift_logs')
             .update({ 
                 reg_number: reg.toUpperCase(), 
-                odometer: miles, 
+                odometer: parseInt(miles), 
                 defects: defectsFound, 
                 check_completed: true 
             })
             .eq('id', currentShiftId);
 
-        if (error) alert("Update Error: " + error.message);
-        else checkStatus();
+        if (error) {
+            alert("Update Error: " + error.message);
+            btn.innerText = "Complete & Save Inspection";
+            btn.disabled = false;
+        } else {
+            document.getElementById('msg').innerText = "✅ Inspection Saved Successfully";
+            checkStatus();
+        }
     }
 
     function toggleNightOut() {
