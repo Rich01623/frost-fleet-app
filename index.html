@@ -3,208 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FleetLog Pro - Driver App</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Frost Fleet Compliance</title>
     <style>
-        :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; --warning: #f59e0b; --dark: #1e293b; --light: #f8fafc; --accent: #8b5cf6; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--light); margin: 0; display: flex; justify-content: center; }
-        #app { width: 100%; max-width: 500px; padding: 15px; box-sizing: border-box; }
-        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        .status-badge { text-align: center; font-weight: 800; padding: 12px; border-radius: 8px; margin: 15px 0; text-transform: uppercase; letter-spacing: 1px; }
-        button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 12px; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        .hidden { display: none; }
-        .check-container { background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 12px; margin-top: 10px; }
-        .defect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
-        .defect-item { display: flex; align-items: center; gap: 10px; font-size: 14px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; }
-        .defect-item input { width: 18px; height: 18px; margin: 0; }
-        #msg { text-align: center; font-size: 13px; color: #64748b; margin-top: 15px; font-weight: bold; }
+        :root { --fts-red: #E62411; --fts-dark: #2d3436; --bg-color: #f4f7f6; --card-bg: #ffffff; --night-blue: #34495e; --warning-yellow: #f1c40f; }
+        .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 35px; background-color: #000; border-bottom: 2px solid var(--fts-red); z-index: 10001; }
+        .ticker { display: inline-block; white-space: nowrap; height: 35px; line-height: 35px; animation: ticker-move 25s linear infinite; }
+        .ticker__item { display: inline-block; padding: 0 40px; font-size: 13px; color: white; font-weight: bold; text-transform: uppercase; }
+        @keyframes ticker-move { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { width: 85%; max-width: 320px; text-align: center; }
+        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        
+        #appContent { display: none; width: 100%; flex-direction: column; align-items: center; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 100px; }
+        header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: white; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #menuBtn { font-size: 26px; color: var(--fts-red); cursor: pointer; padding: 4px 12px; border: 1px solid #eee; border-radius: 8px; background: white; }
+        
+        #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 80px; }
+        #sideMenu a, .menu-item { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        
+        .menu-label { color: #ffffff !important; font-size: 13px; padding: 20px 20px 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; }
+        .logo { max-width: 160px; margin: 10px 0 20px 0; }
+        .welcome-text { font-size: 16px; font-weight: 500; color: #636e72; margin-bottom: 25px; text-transform: capitalize; }
+        .container { width: 90%; max-width: 420px; text-align: center; }
+        .check-card { background: var(--card-bg); border: 1px solid #e0e6ed; border-top: 4px solid var(--fts-red); border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; text-align: left; }
+        .status-badge { font-size: 10px; font-weight: 800; color: #6c757d; background: #f8f9fa; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px; border: 1px solid #dee2e6; }
+        .card-title { margin: 0; color: #2d3436; font-size: 19px; font-weight: 700; }
+        
+        .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: block; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-red { background: var(--fts-red); }
+        .btn-blue { background: var(--night-blue); }
+        .btn:disabled { background: #ccc !important; color: #888 !important; cursor: not-allowed; opacity: 0.6; }
+        
+        .shift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .full-width { grid-column: span 2; }
+
+        #shiftReminder { 
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--warning-yellow); 
+            color: #000; text-align: center; padding: 18px 10px; font-weight: 800; 
+            font-size: 15px; z-index: 10002; display: none; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            border-top: 4px solid #000;
+        }
     </style>
 </head>
 <body>
-
-<div id="app">
-    <h1 style="text-align:center; color: var(--dark);">FleetLog</h1>
-
-    <div id="login-ui" class="card">
-        <input type="email" id="email" placeholder="Driver Email">
-        <input type="password" id="password" placeholder="Password">
-        <button style="background:var(--primary); color:white" onclick="handleLogin()">Login to Dashboard</button>
-    </div>
-
-    <div id="driver-ui" class="hidden">
-        <div class="card">
-            <h3 id="welcome-text" style="margin:0; font-size: 18px;">Welcome</h3>
-            <div id="status" class="status-badge">Syncing...</div>
-
-            <button id="start-btn" style="background:var(--success); color:white" onclick="logAction('Start Shift')">START SHIFT & CLOCK ON</button>
-
-            <div id="vehicle-check-ui" class="hidden">
-                <div class="check-container">
-                    <h4 style="margin:0 0 10px 0; color:var(--warning)">⚠️ Vehicle Inspection Required</h4>
-                    <input type="text" id="reg-no" placeholder="Vehicle Registration" style="text-transform:uppercase">
-                    <input type="number" id="mileage" placeholder="Odometer Reading">
-
-                    <p style="font-size: 12px; font-weight:bold; margin: 15px 0 5px 0;">Select any found defects:</p>
-                    <div class="defect-grid" id="defect-list">
-                        <label class="defect-item"><input type="checkbox" value="Tyres"> Tyres</label>
-                        <label class="defect-item"><input type="checkbox" value="Brakes"> Brakes</label>
-                        <label class="defect-item"><input type="checkbox" value="Lights"> Lights</label>
-                        <label class="defect-item"><input type="checkbox" value="Mirrors"> Mirrors</label>
-                        <label class="defect-item"><input type="checkbox" value="Wipers"> Wipers</label>
-                        <label class="defect-item"><input type="checkbox" value="Fluids"> Fluids</label>
-                        <label class="defect-item"><input type="checkbox" value="Bodywork"> Bodywork</label>
-                        <label class="defect-item"><input type="checkbox" value="Load Security"> Load Sec.</label>
-                    </div>
-                    <button id="submit-inspection-btn" style="background:var(--dark); color:white" onclick="submitVehicleCheck()">Complete & Save Inspection</button>
-                </div>
-            </div>
-
-            <div id="active-shift-ui" class="hidden">
-                <button id="night-btn" onclick="toggleNightOut()">Night Out: OFF</button>
-                <button style="background:var(--danger); color:white" onclick="logAction('End Shift')">END SHIFT & CLOCK OFF</button>
-            </div>
-
-            <p id="msg"></p>
-            <button onclick="handleLogout()" style="background:none; color:var(--danger); font-size:12px; margin:20px auto 0 auto; text-decoration:underline; border:none; display:block;">Logout Device</button>
+    <div id="loginOverlay">
+        <img src="logo.png" class="logo" alt="Frost Haulage">
+        <div class="login-box">
+            <h3 style="color: var(--fts-red); margin-bottom: 20px;">Fleet Portal Access</h3>
+            <input type="text" id="username" placeholder="Full Name">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="checkLogin()">Login</button>
+            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 15px;">Invalid Credentials.</p>
         </div>
     </div>
-</div>
 
-<script>
-    const SUPABASE_URL = "https://mbudwnwxucluwgbkgbfx.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idWR3bnd4dWNsdXdnYmtnYmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDQwMjYsImV4cCI6MjA5MDc4MDAyNn0.xFv-FiQ894vdfJuQYWQyF4WzQXmlnmnKvz_c8nuzl5Q";
-    const GOOGLE_MAPS_KEY = "AIzaSyDOPkYduNBvti4HWX2izIhCrrQ02uk5SL0";
-    
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let currentUser = null;
-    let currentShiftId = null; 
-    let isNightOut = false;
+    <div id="shiftReminder">⚠️ SHIFT ACTIVE: <span id="shiftDuration">00h 00m</span></div>
 
-    window.onload = async () => {
-        const { data: { session } } = await _supabase.auth.getSession();
-        if (session) { currentUser = session.user; initApp(); }
-    };
-
-    async function handleLogin() {
-        const { data, error } = await _supabase.auth.signInWithPassword({
-            email: document.getElementById('email').value, password: document.getElementById('password').value
-        });
-        if (error) alert(error.message);
-        else { currentUser = data.user; initApp(); }
-    }
-
-    function initApp() {
-        document.getElementById('login-ui').classList.add('hidden');
-        document.getElementById('driver-ui').classList.remove('hidden');
-        document.getElementById('welcome-text').innerText = `Driver: ${currentUser.email}`;
-        checkStatus();
-    }
-
-    async function checkStatus() {
-        const { data } = await _supabase.from('shift_logs')
-            .select('*').eq('driver_name', currentUser.email).order('created_at', { ascending: false }).limit(1);
+    <div id="appContent">
+        <div class="ticker-wrap"><div class="ticker">
+            <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
+            <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
+            <div class="ticker__item">FUEL CARD: FUEL WISE</div>
+            <div class="ticker__item">OFFICE: 01949 480130</div>
+            <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
+            <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
+            <div class="ticker__item">FUEL CARD: FUEL WISE</div>
+            <div class="ticker__item">OFFICE: 01949 480130</div>
+        </div></div>
+        <header><div id="menuBtn" onclick="openNav()">☰</div></header>
+        <div id="sideMenu">
+            <div class="menu-label">Security</div>
+            <div class="menu-item">Gate Code: <b>3684</b></div>
+            <div class="menu-label">Support</div>
+            <a href="tel:07701238561">David Jayes</a>
+            <a href="tel:01949480130">Office</a>
+            <div class="menu-label">Account</div>
+            <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer;">Log Out</a>
+            <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center; opacity: 0.8; font-size: 14px;">✕ Close Menu</div>
+        </div>
+        <img src="logo.png" class="logo" alt="Frost Haulage">
+        <div id="welcomeUser" class="welcome-text"></div>
+        <div class="container">
+            <div class="check-card">
+                <div class="status-badge">LIVE GPS TIMECLOCK</div>
+                <h2 class="card-title">Time sheet</h2>
+                <div class="shift-grid">
+                    <button id="startBtn" class="btn btn-red" onclick="logShift('START')">START SHIFT</button>
+                    <button id="endBtn" class="btn" onclick="logShift('END')">END SHIFT</button>
+                    <button id="nightBtn" class="btn btn-blue full-width" onclick="logShift('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
+                </div>
+            </div>
+            <div class="check-card"><div class="status-badge">DVSA COMPLIANCE</div><h2 class="card-title">Daily Vehicle Check</h2><a href="#" id="dailyCheckLink" class="btn btn-red">Start checks</a></div>
+            <div class="check-card" style="border-top-color: var(--fts-dark);"><div class="status-badge">FLEET OPERATIONS</div><h2 class="card-title">Daily trailer checks.</h2><a href="#" id="trailerLink" class="btn">Start checks</a></div>
+            <div class="check-card" style="border-top-color: #34495e;"><div class="status-badge">COST MANAGEMENT</div><h2 class="card-title">Fuel Log</h2><a href="#" id="fuelLink" class="btn" style="background: #34495e;">Submit Fuel Entry</a></div>
+            <div class="check-card" style="border-top-color: #000000; background: #fff5f5;">
+                <div class="status-badge" style="background: #000; color: #fff;">EMERGENCY RESPONSE</div>
+                <h2 class="card-title">Report an Accident</h2>
+                <a href="#" id="accidentLink" target="_blank" class="btn" style="background: #000; margin-top:15px;">I'VE HAD AN ACCIDENT</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Replace with your current deployed Web App URL
+        const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3yR4keAFWgkG_I0YE6xvw9ZgrNJlfdz8l6vnkG66f7PK3Kfkeuh9npOmx1ML6rcx8iA/exec";
         
-        const statusDiv = document.getElementById('status');
-        const startBtn = document.getElementById('start-btn');
-        const checkUi = document.getElementById('vehicle-check-ui');
-        const activeUi = document.getElementById('active-shift-ui');
+        const validUsers = {
+            "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
+            "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
+            "andy west": { pass: "aw26", email: "a.west1fts@gmail.com" },
+            "callum lee": { pass: "ca26", email: "c.lee1fts@gmail.com" },
+            "ian bason": { pass: "ib26", email: "i.bason1fts@gmail.com" },
+            "josh harrison": { pass: "jh26", email: "j.harrison1fts@gmail.com" },
+            "lee woodcock": { pass: "lw26", email: "l.woodcock1fts@gmail.com" },
+            "marc wickham": { pass: "mw26", email: "m.wickham1fts@gmail.com" },
+            "neil wood": { pass: "nw26", email: "n.wood1fts@gmail.com" },
+            "richard spence": { pass: "rs26", email: "r.spence1fts@gmail.com" },
+            "roy taylor": { pass: "rt26", email: "r.taylor1fts@gmail.com" },
+            "stuart sleigh": { pass: "ss26", email: "s.sleigh1fts@gmail.com" },
+            "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" },
+            "richard robinson": { pass: "rr26", email: "robinson01623@gmail.com" },
+            "jon hulbert": { pass: "jh26", email: "j.hulbert1fts@gmail.com" },
+            "chris frost": { pass: "cf26", email: "c.frost1fts@gmail.com" }
+        };
 
-        if (data && data.length > 0 && data[0].action === 'Start Shift') {
-            currentShiftId = data[0].id; // Assign ID globally
-            statusDiv.innerText = "ON DUTY";
-            statusDiv.style.background = "#16a34a"; statusDiv.style.color = "white";
-            startBtn.classList.add('hidden');
+        let timerInterval;
+
+        function logShift(action) {
+            const userName = localStorage.getItem("frostUserName");
+            const promptMsg = action === 'NIGHT OUT' ? "Confirm Night Out allowance for " : "Confirm " + action + " for ";
             
-            if (!data[0].check_completed) {
-                checkUi.classList.remove('hidden');
-                activeUi.classList.add('hidden');
-            } else {
-                checkUi.classList.add('hidden');
-                activeUi.classList.remove('hidden');
-                syncNightOut(data[0].is_night_out);
+            if (confirm(promptMsg + userName + "?")) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const loc = position.coords.latitude + "," + position.coords.longitude;
+                    
+                    // FORCED UK FORMAT WITH DAY NAME
+                    const now = new Date();
+                    const dayName = new Intl.DateTimeFormat('en-GB', { weekday: 'long' }).format(now);
+                    const dateParts = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(now);
+                    const timeParts = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(now);
+                    
+                    const fullDayDate = dayName + ", " + dateParts + " " + timeParts;
+                    
+                    fetch(MY_GOOGLE_SCRIPT_URL + "?name=" + encodeURIComponent(userName) + 
+                          "&action=" + action + 
+                          "&location=" + loc + 
+                          "&date=" + encodeURIComponent(fullDayDate), { method: 'GET', mode: 'no-cors' });
+                    
+                    if (action === 'START') {
+                        localStorage.setItem("shiftStartTime", now.getTime());
+                        startTimer();
+                    } else if (action === 'END') {
+                        localStorage.removeItem("shiftStartTime");
+                        stopTimer();
+                    }
+                    
+                    alert("✅ " + action + " logged as " + dayName);
+                }, () => alert("❌ GPS Error"), { enableHighAccuracy: true });
             }
-        } else {
-            currentShiftId = null;
-            statusDiv.innerText = "OFF DUTY";
-            statusDiv.style.background = "#f1f5f9"; statusDiv.style.color = "black";
-            startBtn.classList.remove('hidden');
-            checkUi.classList.add('hidden');
-            activeUi.classList.add('hidden');
-        }
-    }
-
-    async function logAction(type) {
-        document.getElementById('msg').innerText = "📍 Syncing GPS...";
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            try {
-                const { latitude, longitude } = pos.coords;
-                const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_KEY}`);
-                const geo = await res.json();
-                const addr = geo.results[0]?.formatted_address || "Unknown Location";
-
-                const { error } = await _supabase.from('shift_logs').insert([{
-                    driver_name: currentUser.email, action: type, location: addr, 
-                    lat: latitude, lng: longitude, is_night_out: isNightOut,
-                    day_name: new Date().toLocaleDateString('en-GB', { weekday: 'long' })
-                }]);
-
-                if (error) throw error;
-                checkStatus();
-            } catch (err) { alert("Error: " + err.message); }
-        }, (err) => alert("GPS Required."));
-    }
-
-    async function submitVehicleCheck() {
-        const btn = document.getElementById('submit-inspection-btn');
-        const reg = document.getElementById('reg-no').value;
-        const miles = document.getElementById('mileage').value;
-        const checkedBoxes = document.querySelectorAll('#defect-list input:checked');
-        let defectsFound = Array.from(checkedBoxes).map(cb => cb.value);
-
-        if (!reg || !miles) return alert("Enter Reg and Mileage.");
-        if (defectsFound.length === 0) defectsFound = ["No Defects"];
-
-        // SAFETY NET: If currentShiftId is missing, fetch it again
-        if (!currentShiftId) {
-            const { data } = await _supabase.from('shift_logs').select('id').eq('driver_name', currentUser.email).eq('action', 'Start Shift').order('created_at', { ascending: false }).limit(1);
-            if (data && data.length > 0) currentShiftId = data[0].id;
-            else return alert("No active shift found. Please refresh.");
         }
 
-        btn.innerText = "Saving Check...";
-        btn.disabled = true;
-
-        const { error } = await _supabase.from('shift_logs')
-            .update({ reg_number: reg.toUpperCase(), odometer: parseInt(miles), defects: defectsFound, check_completed: true })
-            .eq('id', currentShiftId);
-
-        if (error) {
-            alert("Update Failed: " + error.message);
-            btn.innerText = "Complete & Save Inspection";
-            btn.disabled = false;
-        } else {
-            document.getElementById('msg').innerText = "✅ Inspection Saved.";
-            checkStatus();
+        function toggleButtons(isShiftActive) {
+            document.getElementById('startBtn').disabled = isShiftActive;
+            document.getElementById('endBtn').disabled = !isShiftActive;
+            document.getElementById('nightBtn').disabled = !isShiftActive;
         }
-    }
 
-    function toggleNightOut() {
-        isNightOut = !isNightOut;
-        syncNightOut(isNightOut);
-        _supabase.from('shift_logs').update({ is_night_out: isNightOut }).eq('id', currentShiftId);
-    }
+        function startTimer() {
+            const startTime = localStorage.getItem("shiftStartTime");
+            if (!startTime) {
+                toggleButtons(false);
+                return;
+            }
 
-    function syncNightOut(val) {
-        isNightOut = val;
-        const btn = document.getElementById('night-btn');
-        btn.innerText = isNightOut ? "Night Out: ON" : "Night Out: OFF";
-        btn.style.background = isNightOut ? "var(--accent)" : "#64748b";
-        btn.style.color = "white";
-    }
+            toggleButtons(true);
+            document.getElementById('shiftReminder').style.display = "block";
+            
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const diff = now - startTime;
+                const h = Math.floor(diff / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                document.getElementById('shiftDuration').innerText = 
+                    (h < 10 ? "0" + h : h) + "h " + (m < 10 ? "0" + m : m) + "m";
+                
+                if (h >= 12) {
+                    document.getElementById('shiftReminder').style.background = "#e74c3c";
+                    document.getElementById('shiftReminder').style.color = "#fff";
+                } else {
+                    document.getElementById('shiftReminder').style.background = "var(--warning-yellow)";
+                    document.getElementById('shiftReminder').style.color = "#000";
+                }
+            }, 1000);
+        }
 
-    async function handleLogout() { await _supabase.auth.signOut(); window.location.reload(); }
-</script>
+        function stopTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('shiftReminder').style.display = "none";
+            toggleButtons(false);
+        }
+
+        function checkLogin() {
+            const user = document.getElementById('username').value.toLowerCase().trim();
+            const pass = document.getElementById('password').value.trim();
+            if (validUsers[user] && validUsers[user].pass === pass) {
+                localStorage.setItem("frostLoggedIn", "true"); localStorage.setItem("frostUserName", user);
+                showDashboard(user);
+            } else { document.getElementById('errorMsg').style.display = "block"; }
+        }
+
+        function showDashboard(name) {
+            document.getElementById('loginOverlay').style.display = "none";
+            document.getElementById('appContent').style.display = "flex";
+            document.getElementById('welcomeUser').innerText = "Session Active: " + name;
+            
+            if (localStorage.getItem("shiftStartTime")) {
+                startTimer();
+            } else {
+                toggleButtons(false);
+            }
+
+            document.getElementById('dailyCheckLink').href = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=" + encodeURIComponent(name);
+            document.getElementById('trailerLink').href = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=" + encodeURIComponent(name);
+            const email = validUsers[name] ? validUsers[name].email : "";
+            document.getElementById('fuelLink').href = "https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=" + encodeURIComponent(name) + "&entry.342429911=" + encodeURIComponent(email);
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                const latLong = position.coords.latitude + "," + position.coords.longitude;
+                const accidentBase = "https://docs.google.com/forms/d/e/1FAIpQLScl710GSdBs7HWOOX_2CPKksm3N_Or9qotBZiAEa1YRXOSVSQ/viewform?usp=pp_url";
+                const fields = "&entry.34060707=" + encodeURIComponent(name) + "&entry.1213289053=" + encodeURIComponent(latLong);
+                document.getElementById('accidentLink').href = accidentBase + fields;
+            });
+        }
+
+        function logout() { localStorage.clear(); location.reload(); }
+        function openNav() { document.getElementById("sideMenu").style.width = "270px"; }
+        function closeNav() { document.getElementById("sideMenu").style.width = "0"; }
+        window.onload = function() { if (localStorage.getItem("frostLoggedIn") === "true") showDashboard(localStorage.getItem("frostUserName")); };
+    </script>
 </body>
 </html>
