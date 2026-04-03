@@ -3,214 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FleetLog Pro - Driver App</title>
+    <title>FleetLog - On Duty First</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --primary: #2563eb; --success: #16a34a; --danger: #dc2626;
-            --dark: #1e293b; --light: #f8fafc; --accent: #8b5cf6;
-        }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--light); margin: 0; padding: 0; display: flex; justify-content: center; }
+        :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; --warning: #f59e0b; --dark: #1e293b; --light: #f8fafc; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--light); margin: 0; display: flex; justify-content: center; }
         #app { width: 100%; max-width: 500px; padding: 15px; box-sizing: border-box; }
-        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        h1 { color: var(--dark); text-align: center; font-size: 24px; margin-bottom: 25px; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 12px; transition: all 0.2s ease; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-login { background: var(--primary); color: white; }
-        .btn-start { background: var(--success); color: white; }
-        .btn-end { background: var(--danger); color: white; }
-        .btn-night { background: #64748b; color: white; }
-        .btn-night.active { background: var(--accent); border: 3px solid #4c1d95; }
-        .status-badge { text-align: center; font-weight: 800; padding: 12px; border-radius: 8px; margin: 15px 0; background: #f1f5f9; text-transform: uppercase; letter-spacing: 1px; }
-        #driver-ui, .hidden { display: none; }
-        #msg { text-align: center; color: #64748b; font-size: 13px; min-height: 20px; margin-top: 15px; line-height: 1.4; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animate: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .status-badge { text-align: center; font-weight: 800; padding: 12px; border-radius: 8px; margin: 15px 0; text-transform: uppercase; }
+        button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 12px; }
+        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .hidden { display: none; }
+        .check-box { background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 10px; margin-top: 10px; }
+        #msg { text-align: center; font-size: 13px; color: #64748b; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <h1>FleetLog Driver</h1>
+    <h1 style="text-align:center">FleetLog</h1>
 
     <div id="login-ui" class="card">
-        <input type="email" id="email" placeholder="Email Address">
+        <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
-        <button class="btn-login" id="login-btn" onclick="handleLogin()">Login to Dashboard</button>
+        <button style="background:var(--primary); color:white" onclick="handleLogin()">Login</button>
     </div>
 
-    <div id="driver-ui">
+    <div id="driver-ui" class="hidden">
         <div class="card">
-            <h3 id="welcome-text" style="margin-top:0; color: var(--dark);">Checking Session...</h3>
-            <div id="status" class="status-badge">Syncing...</div>
-            
-            <button id="start-btn" class="btn-start" onclick="logAction('Start Shift')">Start Shift</button>
-            <button id="night-btn" class="btn-night" onclick="toggleNightOut()">Night Out: OFF</button>
-            <button id="end-btn" class="btn-end" onclick="logAction('End Shift')">End Shift</button>
-            
+            <h3 id="welcome-text" style="margin:0">Loading...</h3>
+            <div id="status" class="status-badge">Checking...</div>
+
+            <button id="start-btn" style="background:var(--success); color:white" onclick="logAction('Start Shift')">START SHIFT (Clock On)</button>
+
+            <div id="vehicle-check-ui" class="hidden">
+                <div class="check-box">
+                    <h4 style="margin-top:0; color:var(--warning)">⚠️ Vehicle Inspection Required</h4>
+                    <input type="text" id="reg-no" placeholder="Vehicle Registration" style="text-transform:uppercase">
+                    <input type="number" id="mileage" placeholder="Current Odometer">
+                    <label style="display:flex; align-items:center; gap:10px; margin-top:10px; font-size:14px">
+                        <input type="checkbox" id="walkaround" style="width:20px; height:20px"> I confirm walkaround is complete.
+                    </label>
+                    <button style="background:var(--dark); color:white" onclick="submitVehicleCheck()">Submit Inspection</button>
+                </div>
+            </div>
+
+            <div id="active-shift-ui" class="hidden">
+                <button id="night-btn" style="background:#64748b; color:white" onclick="toggleNightOut()">Night Out: OFF</button>
+                <button style="background:var(--danger); color:white" onclick="logAction('End Shift')">END SHIFT (Clock Off)</button>
+            </div>
+
             <p id="msg"></p>
-            <button onclick="handleLogout()" style="background:none; color:var(--danger); font-size:12px; margin-top:20px; text-decoration:underline;">Log Out Device</button>
+            <button onclick="handleLogout()" style="background:none; color:var(--danger); font-size:12px; margin-top:20px; text-decoration:underline; border:none">Logout Device</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- CONFIGURATION ---
     const SUPABASE_URL = "https://mbudwnwxucluwgbkgbfx.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idWR3bnd4dWNsdXdnYmtnYmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDQwMjYsImV4cCI6MjA5MDc4MDAyNn0.xFv-FiQ894vdfJuQYWQyF4WzQXmlnmnKvz_c8nuzl5Q";
     const GOOGLE_MAPS_KEY = "AIzaSyDOPkYduNBvti4HWX2izIhCrrQ02uk5SL0";
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let isNightOut = false;
     let currentUser = null;
+    let currentShiftId = null; 
+    let isNightOut = false;
 
-    // --- INITIALIZE APP ---
     window.onload = async () => {
         const { data: { session } } = await _supabase.auth.getSession();
-        if (session) {
-            currentUser = session.user;
-            showDriverUI();
-            checkCurrentStatus();
-        }
+        if (session) { currentUser = session.user; setupUI(); }
     };
 
     async function handleLogin() {
-        const btn = document.getElementById('login-btn');
-        btn.disabled = true;
-        btn.innerText = "Authenticating...";
-        
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-
-        if (error) {
-            alert("Login Failed: " + error.message);
-            btn.disabled = false;
-            btn.innerText = "Login to Dashboard";
-        } else {
-            currentUser = data.user;
-            showDriverUI();
-            checkCurrentStatus();
-        }
+        const { data, error } = await _supabase.auth.signInWithPassword({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        });
+        if (error) alert(error.message);
+        else { currentUser = data.user; setupUI(); }
     }
 
-    function showDriverUI() {
-        document.getElementById('login-ui').style.display = 'none';
-        document.getElementById('driver-ui').style.display = 'block';
+    async function setupUI() {
+        document.getElementById('login-ui').classList.add('hidden');
+        document.getElementById('driver-ui').classList.remove('hidden');
         document.getElementById('welcome-text').innerText = `Driver: ${currentUser.email}`;
+        checkStatus();
     }
 
-    // --- CHECK DB STATUS ---
-    async function checkCurrentStatus() {
-        const statusDiv = document.getElementById('status');
-        const { data, error } = await _supabase
-            .from('shift_logs')
-            .select('*')
-            .eq('driver_name', currentUser.email)
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-        if (data && data.length > 0) {
-            const lastAction = data[0].action;
-            if (lastAction === 'Start Shift') {
-                updateUI('On Duty');
-                if (data[0].is_night_out) setNightOut(true);
-            } else {
-                updateUI('Off Duty');
-            }
-        } else {
-            updateUI('Off Duty');
-        }
-    }
-
-    function updateUI(state) {
+    async function checkStatus() {
+        const { data } = await _supabase.from('shift_logs').select('*').eq('driver_name', currentUser.email).order('created_at', { ascending: false }).limit(1);
+        
         const statusDiv = document.getElementById('status');
         const startBtn = document.getElementById('start-btn');
-        const endBtn = document.getElementById('end-btn');
-        
-        statusDiv.innerText = state;
-        if (state === 'On Duty') {
-            statusDiv.style.background = '#16a34a';
-            statusDiv.style.color = 'white';
+        const checkUi = document.getElementById('vehicle-check-ui');
+        const activeUi = document.getElementById('active-shift-ui');
+
+        if (data && data.length > 0 && data[0].action === 'Start Shift') {
+            currentShiftId = data[0].id;
+            statusDiv.innerText = "ON DUTY";
+            statusDiv.style.background = "#16a34a"; statusDiv.style.color = "white";
             startBtn.classList.add('hidden');
-            endBtn.classList.remove('hidden');
+            
+            // If they haven't finished the check yet, show the check UI
+            if (!data[0].check_completed) {
+                checkUi.classList.remove('hidden');
+                activeUi.classList.add('hidden');
+            } else {
+                checkUi.classList.add('hidden');
+                activeUi.classList.remove('hidden');
+                syncNightOut(data[0].is_night_out);
+            }
         } else {
-            statusDiv.style.background = '#f1f5f9';
-            statusDiv.style.color = 'black';
+            statusDiv.innerText = "OFF DUTY";
+            statusDiv.style.background = "#f1f5f9"; statusDiv.style.color = "black";
             startBtn.classList.remove('hidden');
-            endBtn.classList.add('hidden');
-            setNightOut(false);
+            checkUi.classList.add('hidden');
+            activeUi.classList.add('hidden');
         }
     }
 
-    // --- ACTIONS ---
-    function toggleNightOut() {
-        setNightOut(!isNightOut);
+    async function logAction(type) {
+        document.getElementById('msg').innerText = "Locating...";
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_KEY}`);
+            const geo = await res.json();
+            const addr = geo.results[0]?.formatted_address || "Unknown Location";
+
+            const { error } = await _supabase.from('shift_logs').insert([{
+                driver_name: currentUser.email,
+                action: type,
+                location: addr, lat: latitude, lng: longitude,
+                day_name: new Date().toLocaleDateString('en-GB', { weekday: 'long' }),
+                is_night_out: isNightOut
+            }]);
+
+            if (error) alert(error.message);
+            else checkStatus();
+        });
     }
 
-    function setNightOut(val) {
+    async function submitVehicleCheck() {
+        const reg = document.getElementById('reg-no').value;
+        const miles = document.getElementById('mileage').value;
+        const ok = document.getElementById('walkaround').checked;
+
+        if (!reg || !miles || !ok) return alert("Please complete all fields.");
+
+        const { error } = await _supabase.from('shift_logs')
+            .update({ reg_number: reg, odometer: miles, check_completed: true })
+            .eq('id', currentShiftId);
+
+        if (error) alert(error.message);
+        else checkStatus();
+    }
+
+    function toggleNightOut() {
+        isNightOut = !isNightOut;
+        syncNightOut(isNightOut);
+        // Update the database immediately so it's saved
+        _supabase.from('shift_logs').update({ is_night_out: isNightOut }).eq('id', currentShiftId);
+    }
+
+    function syncNightOut(val) {
         isNightOut = val;
         const btn = document.getElementById('night-btn');
-        if (isNightOut) {
-            btn.classList.add('active');
-            btn.innerText = "Night Out: ON";
-        } else {
-            btn.classList.remove('active');
-            btn.innerText = "Night Out: OFF";
-        }
+        btn.innerText = isNightOut ? "Night Out: ON" : "Night Out: OFF";
+        btn.style.background = isNightOut ? "#8b5cf6" : "#64748b";
     }
 
-    async function logAction(actionType) {
-        const msgDiv = document.getElementById('msg');
-        msgDiv.innerHTML = '<span class="loader"></span> Accessing GPS...';
-
-        if (!navigator.geolocation) {
-            alert("Please enable GPS/Location in your browser settings.");
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const { latitude, longitude } = position.coords;
-            
-            try {
-                // Reverse Geocoding
-                const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_KEY}`);
-                const geoData = await response.json();
-                const address = geoData.results[0]?.formatted_address || "Unknown Location";
-
-                const { error } = await _supabase
-                    .from('shift_logs')
-                    .insert([{
-                        driver_name: currentUser.email,
-                        action: actionType,
-                        day_name: new Date().toLocaleDateString('en-GB', { weekday: 'long' }),
-                        location: address,
-                        lat: latitude,
-                        lng: longitude,
-                        is_night_out: isNightOut
-                    }]);
-
-                if (error) throw error;
-
-                updateUI(actionType === 'Start Shift' ? 'On Duty' : 'Off Duty');
-                msgDiv.innerText = `Successfully logged ${actionType} at ${new Date().toLocaleTimeString()}`;
-
-            } catch (err) {
-                msgDiv.innerText = "Error: " + err.message;
-                console.error(err);
-            }
-        }, (err) => {
-            msgDiv.innerText = "GPS Error: Please ensure Location is allowed.";
-        }, { enableHighAccuracy: true });
-    }
-
-    async function handleLogout() {
-        await _supabase.auth.signOut();
-        window.location.reload();
-    }
+    async function handleLogout() { await _supabase.auth.signOut(); window.location.reload(); }
 </script>
-
 </body>
 </html>
