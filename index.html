@@ -3,58 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FleetLog - On Duty First</title>
+    <title>FleetLog Pro - Driver App</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; --warning: #f59e0b; --dark: #1e293b; --light: #f8fafc; }
+        :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; --warning: #f59e0b; --dark: #1e293b; --light: #f8fafc; --accent: #8b5cf6; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--light); margin: 0; display: flex; justify-content: center; }
         #app { width: 100%; max-width: 500px; padding: 15px; box-sizing: border-box; }
-        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        .status-badge { text-align: center; font-weight: 800; padding: 12px; border-radius: 8px; margin: 15px 0; text-transform: uppercase; }
+        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .status-badge { text-align: center; font-weight: 800; padding: 12px; border-radius: 8px; margin: 15px 0; text-transform: uppercase; letter-spacing: 1px; }
         button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 12px; }
-        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        input[type="text"], input[type="number"], input[type="email"], input[type="password"] { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         .hidden { display: none; }
-        .check-box { background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 10px; margin-top: 10px; }
-        #msg { text-align: center; font-size: 13px; color: #64748b; margin-top: 15px; }
+        
+        /* Defect Checklist Styling */
+        .check-container { background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 12px; margin-top: 10px; }
+        .defect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
+        .defect-item { display: flex; align-items: center; gap: 10px; font-size: 14px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; }
+        .defect-item input { width: 18px; height: 18px; margin: 0; }
+        
+        #msg { text-align: center; font-size: 13px; color: #64748b; margin-top: 15px; min-height: 20px; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <h1 style="text-align:center">FleetLog</h1>
+    <h1 style="text-align:center; color: var(--dark);">FleetLog</h1>
 
     <div id="login-ui" class="card">
-        <input type="email" id="email" placeholder="Email">
+        <input type="email" id="email" placeholder="Driver Email">
         <input type="password" id="password" placeholder="Password">
-        <button style="background:var(--primary); color:white" onclick="handleLogin()">Login</button>
+        <button style="background:var(--primary); color:white" onclick="handleLogin()">Login to Dashboard</button>
     </div>
 
     <div id="driver-ui" class="hidden">
         <div class="card">
-            <h3 id="welcome-text" style="margin:0">Loading...</h3>
-            <div id="status" class="status-badge">Checking...</div>
+            <h3 id="welcome-text" style="margin:0; font-size: 18px;">Welcome</h3>
+            <div id="status" class="status-badge">Syncing...</div>
 
-            <button id="start-btn" style="background:var(--success); color:white" onclick="logAction('Start Shift')">START SHIFT (Clock On)</button>
+            <button id="start-btn" style="background:var(--success); color:white" onclick="logAction('Start Shift')">START SHIFT & CLOCK ON</button>
 
             <div id="vehicle-check-ui" class="hidden">
-                <div class="check-box">
-                    <h4 style="margin-top:0; color:var(--warning)">⚠️ Vehicle Inspection Required</h4>
+                <div class="check-container">
+                    <h4 style="margin:0 0 10px 0; color:var(--warning)">⚠️ Vehicle Inspection Required</h4>
                     <input type="text" id="reg-no" placeholder="Vehicle Registration" style="text-transform:uppercase">
-                    <input type="number" id="mileage" placeholder="Current Odometer">
-                    <label style="display:flex; align-items:center; gap:10px; margin-top:10px; font-size:14px">
-                        <input type="checkbox" id="walkaround" style="width:20px; height:20px"> I confirm walkaround is complete.
-                    </label>
-                    <button style="background:var(--dark); color:white" onclick="submitVehicleCheck()">Submit Inspection</button>
+                    <input type="number" id="mileage" placeholder="Odometer Reading">
+
+                    <p style="font-size: 12px; font-weight:bold; margin: 15px 0 5px 0;">Select any found defects:</p>
+                    <div class="defect-grid" id="defect-list">
+                        <label class="defect-item"><input type="checkbox" value="Tyres"> Tyres</label>
+                        <label class="defect-item"><input type="checkbox" value="Brakes"> Brakes</label>
+                        <label class="defect-item"><input type="checkbox" value="Lights"> Lights</label>
+                        <label class="defect-item"><input type="checkbox" value="Mirrors"> Mirrors</label>
+                        <label class="defect-item"><input type="checkbox" value="Wipers"> Wipers</label>
+                        <label class="defect-item"><input type="checkbox" value="Fluids"> Fluids</label>
+                        <label class="defect-item"><input type="checkbox" value="Bodywork"> Bodywork</label>
+                        <label class="defect-item"><input type="checkbox" value="Load Security"> Load Sec.</label>
+                    </div>
+
+                    <button style="background:var(--dark); color:white" onclick="submitVehicleCheck()">Complete & Save Inspection</button>
                 </div>
             </div>
 
             <div id="active-shift-ui" class="hidden">
                 <button id="night-btn" style="background:#64748b; color:white" onclick="toggleNightOut()">Night Out: OFF</button>
-                <button style="background:var(--danger); color:white" onclick="logAction('End Shift')">END SHIFT (Clock Off)</button>
+                <button style="background:var(--danger); color:white" onclick="logAction('End Shift')">END SHIFT & CLOCK OFF</button>
             </div>
 
             <p id="msg"></p>
-            <button onclick="handleLogout()" style="background:none; color:var(--danger); font-size:12px; margin-top:20px; text-decoration:underline; border:none">Logout Device</button>
+            <button onclick="handleLogout()" style="background:none; color:var(--danger); font-size:12px; margin-top:20px; text-decoration:underline; border:none; width:auto; display:block; margin-left:auto; margin-right:auto;">Logout Device</button>
         </div>
     </div>
 </div>
@@ -71,7 +87,7 @@
 
     window.onload = async () => {
         const { data: { session } } = await _supabase.auth.getSession();
-        if (session) { currentUser = session.user; setupUI(); }
+        if (session) { currentUser = session.user; initApp(); }
     };
 
     async function handleLogin() {
@@ -80,10 +96,10 @@
             password: document.getElementById('password').value
         });
         if (error) alert(error.message);
-        else { currentUser = data.user; setupUI(); }
+        else { currentUser = data.user; initApp(); }
     }
 
-    async function setupUI() {
+    function initApp() {
         document.getElementById('login-ui').classList.add('hidden');
         document.getElementById('driver-ui').classList.remove('hidden');
         document.getElementById('welcome-text').innerText = `Driver: ${currentUser.email}`;
@@ -91,7 +107,11 @@
     }
 
     async function checkStatus() {
-        const { data } = await _supabase.from('shift_logs').select('*').eq('driver_name', currentUser.email).order('created_at', { ascending: false }).limit(1);
+        const { data } = await _supabase.from('shift_logs')
+            .select('*')
+            .eq('driver_name', currentUser.email)
+            .order('created_at', { ascending: false })
+            .limit(1);
         
         const statusDiv = document.getElementById('status');
         const startBtn = document.getElementById('start-btn');
@@ -100,11 +120,10 @@
 
         if (data && data.length > 0 && data[0].action === 'Start Shift') {
             currentShiftId = data[0].id;
-            statusDiv.innerText = "ON DUTY";
+            statusDiv.innerText = "ON DUTY (LOGGED)";
             statusDiv.style.background = "#16a34a"; statusDiv.style.color = "white";
             startBtn.classList.add('hidden');
             
-            // If they haven't finished the check yet, show the check UI
             if (!data[0].check_completed) {
                 checkUi.classList.remove('hidden');
                 activeUi.classList.add('hidden');
@@ -123,7 +142,7 @@
     }
 
     async function logAction(type) {
-        document.getElementById('msg').innerText = "Locating...";
+        document.getElementById('msg').innerText = "📍 Getting location...";
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const { latitude, longitude } = pos.coords;
             const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_KEY}`);
@@ -138,30 +157,41 @@
                 is_night_out: isNightOut
             }]);
 
-            if (error) alert(error.message);
-            else checkStatus();
+            if (error) alert("Log Error: " + error.message);
+            else {
+                document.getElementById('msg').innerText = `✅ Logged ${type} at ${new Date().toLocaleTimeString()}`;
+                checkStatus();
+            }
+        }, (err) => {
+            alert("Location error. Please enable GPS.");
         });
     }
 
     async function submitVehicleCheck() {
         const reg = document.getElementById('reg-no').value;
         const miles = document.getElementById('mileage').value;
-        const ok = document.getElementById('walkaround').checked;
+        const checkedBoxes = document.querySelectorAll('#defect-list input:checked');
+        let defectsFound = Array.from(checkedBoxes).map(cb => cb.value);
 
-        if (!reg || !miles || !ok) return alert("Please complete all fields.");
+        if (!reg || !miles) return alert("Registration and Mileage are required.");
+        if (defectsFound.length === 0) defectsFound = ["No Defects"];
 
         const { error } = await _supabase.from('shift_logs')
-            .update({ reg_number: reg, odometer: miles, check_completed: true })
+            .update({ 
+                reg_number: reg.toUpperCase(), 
+                odometer: miles, 
+                defects: defectsFound, 
+                check_completed: true 
+            })
             .eq('id', currentShiftId);
 
-        if (error) alert(error.message);
+        if (error) alert("Update Error: " + error.message);
         else checkStatus();
     }
 
     function toggleNightOut() {
         isNightOut = !isNightOut;
         syncNightOut(isNightOut);
-        // Update the database immediately so it's saved
         _supabase.from('shift_logs').update({ is_night_out: isNightOut }).eq('id', currentShiftId);
     }
 
@@ -169,7 +199,7 @@
         isNightOut = val;
         const btn = document.getElementById('night-btn');
         btn.innerText = isNightOut ? "Night Out: ON" : "Night Out: OFF";
-        btn.style.background = isNightOut ? "#8b5cf6" : "#64748b";
+        btn.style.background = isNightOut ? "var(--accent)" : "#64748b";
     }
 
     async function handleLogout() { await _supabase.auth.signOut(); window.location.reload(); }
