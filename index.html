@@ -13,13 +13,13 @@
         .status-badge { text-align: center; font-weight: 800; padding: 12px; border-radius: 8px; margin: 15px 0; text-transform: uppercase; letter-spacing: 1px; }
         button { width: 100%; padding: 16px; border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 12px; }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
-        input[type="text"], input[type="number"], input[type="email"], input[type="password"] { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         .hidden { display: none; }
         .check-container { background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 12px; margin-top: 10px; }
         .defect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
         .defect-item { display: flex; align-items: center; gap: 10px; font-size: 14px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; }
         .defect-item input { width: 18px; height: 18px; margin: 0; }
-        #msg { text-align: center; font-size: 13px; color: #64748b; margin-top: 15px; min-height: 20px; font-weight: bold; }
+        #msg { text-align: center; font-size: 13px; color: #64748b; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -57,13 +57,12 @@
                         <label class="defect-item"><input type="checkbox" value="Bodywork"> Bodywork</label>
                         <label class="defect-item"><input type="checkbox" value="Load Security"> Load Sec.</label>
                     </div>
-
                     <button id="submit-inspection-btn" style="background:var(--dark); color:white" onclick="submitVehicleCheck()">Complete & Save Inspection</button>
                 </div>
             </div>
 
             <div id="active-shift-ui" class="hidden">
-                <button id="night-btn" style="background:#64748b; color:white" onclick="toggleNightOut()">Night Out: OFF</button>
+                <button id="night-btn" onclick="toggleNightOut()">Night Out: OFF</button>
                 <button style="background:var(--danger); color:white" onclick="logAction('End Shift')">END SHIFT & CLOCK OFF</button>
             </div>
 
@@ -90,8 +89,7 @@
 
     async function handleLogin() {
         const { data, error } = await _supabase.auth.signInWithPassword({
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value
+            email: document.getElementById('email').value, password: document.getElementById('password').value
         });
         if (error) alert(error.message);
         else { currentUser = data.user; initApp(); }
@@ -105,11 +103,8 @@
     }
 
     async function checkStatus() {
-        const { data, error } = await _supabase.from('shift_logs')
-            .select('*')
-            .eq('driver_name', currentUser.email)
-            .order('created_at', { ascending: false })
-            .limit(1);
+        const { data } = await _supabase.from('shift_logs')
+            .select('*').eq('driver_name', currentUser.email).order('created_at', { ascending: false }).limit(1);
         
         const statusDiv = document.getElementById('status');
         const startBtn = document.getElementById('start-btn');
@@ -117,8 +112,8 @@
         const activeUi = document.getElementById('active-shift-ui');
 
         if (data && data.length > 0 && data[0].action === 'Start Shift') {
-            currentShiftId = data[0].id; // CRITICAL: Captures the ID for the update
-            statusDiv.innerText = "ON DUTY (LOGGED)";
+            currentShiftId = data[0].id; // Assign ID globally
+            statusDiv.innerText = "ON DUTY";
             statusDiv.style.background = "#16a34a"; statusDiv.style.color = "white";
             startBtn.classList.add('hidden');
             
@@ -131,6 +126,7 @@
                 syncNightOut(data[0].is_night_out);
             }
         } else {
+            currentShiftId = null;
             statusDiv.innerText = "OFF DUTY";
             statusDiv.style.background = "#f1f5f9"; statusDiv.style.color = "black";
             startBtn.classList.remove('hidden');
@@ -140,29 +136,24 @@
     }
 
     async function logAction(type) {
-        document.getElementById('msg').innerText = "📍 Accessing GPS...";
+        document.getElementById('msg').innerText = "📍 Syncing GPS...";
         navigator.geolocation.getCurrentPosition(async (pos) => {
-            const { latitude, longitude } = pos.coords;
             try {
+                const { latitude, longitude } = pos.coords;
                 const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_KEY}`);
                 const geo = await res.json();
                 const addr = geo.results[0]?.formatted_address || "Unknown Location";
 
                 const { error } = await _supabase.from('shift_logs').insert([{
-                    driver_name: currentUser.email,
-                    action: type,
-                    location: addr, lat: latitude, lng: longitude,
-                    day_name: new Date().toLocaleDateString('en-GB', { weekday: 'long' }),
-                    is_night_out: isNightOut
+                    driver_name: currentUser.email, action: type, location: addr, 
+                    lat: latitude, lng: longitude, is_night_out: isNightOut,
+                    day_name: new Date().toLocaleDateString('en-GB', { weekday: 'long' })
                 }]);
 
                 if (error) throw error;
-                document.getElementById('msg').innerText = `✅ Logged ${type}`;
                 checkStatus();
-            } catch (err) {
-                alert("Log Error: " + err.message);
-            }
-        }, (err) => alert("Please allow location access."));
+            } catch (err) { alert("Error: " + err.message); }
+        }, (err) => alert("GPS Required."));
     }
 
     async function submitVehicleCheck() {
@@ -172,27 +163,29 @@
         const checkedBoxes = document.querySelectorAll('#defect-list input:checked');
         let defectsFound = Array.from(checkedBoxes).map(cb => cb.value);
 
-        if (!reg || !miles) return alert("Please enter Reg and Mileage.");
+        if (!reg || !miles) return alert("Enter Reg and Mileage.");
         if (defectsFound.length === 0) defectsFound = ["No Defects"];
 
-        btn.innerText = "Saving...";
+        // SAFETY NET: If currentShiftId is missing, fetch it again
+        if (!currentShiftId) {
+            const { data } = await _supabase.from('shift_logs').select('id').eq('driver_name', currentUser.email).eq('action', 'Start Shift').order('created_at', { ascending: false }).limit(1);
+            if (data && data.length > 0) currentShiftId = data[0].id;
+            else return alert("No active shift found. Please refresh.");
+        }
+
+        btn.innerText = "Saving Check...";
         btn.disabled = true;
 
         const { error } = await _supabase.from('shift_logs')
-            .update({ 
-                reg_number: reg.toUpperCase(), 
-                odometer: parseInt(miles), 
-                defects: defectsFound, 
-                check_completed: true 
-            })
+            .update({ reg_number: reg.toUpperCase(), odometer: parseInt(miles), defects: defectsFound, check_completed: true })
             .eq('id', currentShiftId);
 
         if (error) {
-            alert("Update Error: " + error.message);
+            alert("Update Failed: " + error.message);
             btn.innerText = "Complete & Save Inspection";
             btn.disabled = false;
         } else {
-            document.getElementById('msg').innerText = "✅ Inspection Saved Successfully";
+            document.getElementById('msg').innerText = "✅ Inspection Saved.";
             checkStatus();
         }
     }
@@ -208,6 +201,7 @@
         const btn = document.getElementById('night-btn');
         btn.innerText = isNightOut ? "Night Out: ON" : "Night Out: OFF";
         btn.style.background = isNightOut ? "var(--accent)" : "#64748b";
+        btn.style.color = "white";
     }
 
     async function handleLogout() { await _supabase.auth.signOut(); window.location.reload(); }
