@@ -107,7 +107,6 @@
         </div>
     </div>
     <script>
-        // MASTER URL INJECTED HERE
         const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPt-AJcRRyt0f1L-pZ9VNUqiFkaR7MEp-GD3wy8CBcoYaOatyta1ToHyB00DyTHYFl3w/exec";
         
         const validUsers = {
@@ -131,36 +130,36 @@
 
         let timerInterval;
 
-        function logShift(action) {
+        // FIXED: Robust shift logging
+        async function logShift(action) {
             const userName = localStorage.getItem("frostUserName");
-            const promptMsg = action === 'NIGHT OUT' ? "Confirm Night Out allowance for " : "Confirm " + action + " for ";
-            
-            if (confirm(promptMsg + userName + "?")) {
-                navigator.geolocation.getCurrentPosition((position) => {
+            if (!userName) return alert("Please log in again.");
+
+            if (confirm(`Confirm ${action} for ${userName}?`)) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
                     const loc = position.coords.latitude + "," + position.coords.longitude;
-                    
                     const now = new Date();
-                    const dayName = new Intl.DateTimeFormat('en-GB', { weekday: 'long' }).format(now);
-                    const dateParts = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(now);
-                    const timeParts = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(now);
                     
-                    const fullDayDate = dayName + ", " + dateParts + " " + timeParts;
-                    
-                    fetch(MY_GOOGLE_SCRIPT_URL + "?name=" + encodeURIComponent(userName) + 
-                          "&action=" + action + 
-                          "&location=" + loc + 
-                          "&date=" + encodeURIComponent(fullDayDate), { method: 'GET', mode: 'no-cors' });
-                    
-                    if (action === 'START') {
-                        localStorage.setItem("shiftStartTime", now.getTime());
-                        startTimer();
-                    } else if (action === 'END') {
-                        localStorage.removeItem("shiftStartTime");
-                        stopTimer();
+                    // Construct URL with cache buster
+                    const url = `${MY_GOOGLE_SCRIPT_URL}?name=${encodeURIComponent(userName)}&action=${encodeURIComponent(action)}&location=${encodeURIComponent(loc)}&t=${now.getTime()}`;
+
+                    try {
+                        // Use standard fetch to follow Google's internal redirects
+                        fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-cache' });
+                        
+                        if (action === 'START') {
+                            localStorage.setItem("shiftStartTime", now.getTime());
+                            startTimer();
+                        } else if (action === 'END') {
+                            localStorage.removeItem("shiftStartTime");
+                            stopTimer();
+                        }
+                        
+                        alert(`✅ ${action} Recorded.`);
+                    } catch (err) {
+                        alert("⚠️ System Busy. Checking connection...");
                     }
-                    
-                    alert("✅ " + action + " logged as " + dayName);
-                }, () => alert("❌ GPS Error"), { enableHighAccuracy: true });
+                }, () => alert("❌ GPS must be enabled to log shifts."), { enableHighAccuracy: true });
             }
         }
 
@@ -172,32 +171,16 @@
 
         function startTimer() {
             const startTime = localStorage.getItem("shiftStartTime");
-            if (!startTime) {
-                toggleButtons(false);
-                return;
-            }
-
+            if (!startTime) { toggleButtons(false); return; }
             toggleButtons(true);
             document.getElementById('shiftReminder').style.display = "block";
-            
             if (timerInterval) clearInterval(timerInterval);
-            
             timerInterval = setInterval(() => {
                 const now = new Date().getTime();
                 const diff = now - startTime;
                 const h = Math.floor(diff / (1000 * 60 * 60));
                 const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                
-                document.getElementById('shiftDuration').innerText = 
-                    (h < 10 ? "0" + h : h) + "h " + (m < 10 ? "0" + m : m) + "m";
-                
-                if (h >= 12) {
-                    document.getElementById('shiftReminder').style.background = "#e74c3c";
-                    document.getElementById('shiftReminder').style.color = "#fff";
-                } else {
-                    document.getElementById('shiftReminder').style.background = "var(--warning-yellow)";
-                    document.getElementById('shiftReminder').style.color = "#000";
-                }
+                document.getElementById('shiftDuration').innerText = `${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m`;
             }, 1000);
         }
 
@@ -211,33 +194,25 @@
             const user = document.getElementById('username').value.toLowerCase().trim();
             const pass = document.getElementById('password').value.trim();
             if (validUsers[user] && validUsers[user].pass === pass) {
-                localStorage.setItem("frostLoggedIn", "true"); localStorage.setItem("frostUserName", user);
+                localStorage.setItem("frostLoggedIn", "true"); 
+                localStorage.setItem("frostUserName", user);
                 showDashboard(user);
-            } else { document.getElementById('errorMsg').style.display = "block"; }
+            } else { 
+                document.getElementById('errorMsg').style.display = "block"; 
+            }
         }
 
         function showDashboard(name) {
             document.getElementById('loginOverlay').style.display = "none";
             document.getElementById('appContent').style.display = "flex";
             document.getElementById('welcomeUser').innerText = "Session Active: " + name;
-            
-            if (localStorage.getItem("shiftStartTime")) {
-                startTimer();
-            } else {
-                toggleButtons(false);
-            }
+            if (localStorage.getItem("shiftStartTime")) startTimer(); else toggleButtons(false);
 
-            document.getElementById('dailyCheckLink').href = "https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=" + encodeURIComponent(name);
-            document.getElementById('trailerLink').href = "https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=" + encodeURIComponent(name);
+            // Update Form Links
+            document.getElementById('dailyCheckLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=${encodeURIComponent(name)}`;
+            document.getElementById('trailerLink').href = `https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=${encodeURIComponent(name)}`;
             const email = validUsers[name] ? validUsers[name].email : "";
-            document.getElementById('fuelLink').href = "https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=" + encodeURIComponent(name) + "&entry.342429911=" + encodeURIComponent(email);
-
-            navigator.geolocation.getCurrentPosition((position) => {
-                const latLong = position.coords.latitude + "," + position.coords.longitude;
-                const accidentBase = "https://docs.google.com/forms/d/e/1FAIpQLScl710GSdBs7HWOOX_2CPKksm3N_Or9qotBZiAEa1YRXOSVSQ/viewform?usp=pp_url";
-                const fields = "&entry.34060707=" + encodeURIComponent(name) + "&entry.1213289053=" + encodeURIComponent(latLong);
-                document.getElementById('accidentLink').href = accidentBase + fields;
-            });
+            document.getElementById('fuelLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=${encodeURIComponent(name)}&entry.342429911=${encodeURIComponent(email)}`;
         }
 
         function logout() { localStorage.clear(); location.reload(); }
