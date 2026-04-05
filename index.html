@@ -32,7 +32,7 @@
         .status-badge { font-size: 10px; font-weight: 800; color: #6c757d; background: #f8f9fa; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px; border: 1px solid #dee2e6; }
         .card-title { margin: 0; color: #2d3436; font-size: 19px; font-weight: 700; }
         
-        .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: block; border: none; cursor: pointer; transition: 0.2s; }
+        .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: block; border: none; cursor: pointer; transition: 0.2s; width: 100%; }
         .btn-red { background: var(--fts-red); }
         .btn-blue { background: var(--night-blue); }
         .btn:disabled { background: #ccc !important; color: #888 !important; cursor: not-allowed; opacity: 0.6; }
@@ -107,6 +107,7 @@
         </div>
     </div>
     <script>
+        // YOUR UPDATED GOOGLE SCRIPT URL
         const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrRxncU6mra4tJ6-J4WJu48HlMLrCaPyhWA0yx4E-0E5e2CFRWUaIDnCYoDXXHLLz_Iw/exec";
         
         const validUsers = {
@@ -130,40 +131,56 @@
 
         let timerInterval;
 
-        // FIXED: Robust shift logging
         async function logShift(action) {
             const userName = localStorage.getItem("frostUserName");
             if (!userName) return alert("Please log in again.");
 
             if (confirm(`Confirm ${action} for ${userName}?`)) {
+                // Visual feedback: Change button text to show we are waiting for Google
+                const btn = action === 'START' ? document.getElementById('startBtn') : (action === 'END' ? document.getElementById('endBtn') : document.getElementById('nightBtn'));
+                const originalText = btn.innerText;
+                btn.innerText = "UPLOADING...";
+                btn.disabled = true;
+
                 navigator.geolocation.getCurrentPosition(async (position) => {
                     const loc = position.coords.latitude + "," + position.coords.longitude;
                     const now = new Date();
                     
-                    // Construct URL with cache buster
+                    // URL with Cache Buster
                     const url = `${MY_GOOGLE_SCRIPT_URL}?name=${encodeURIComponent(userName)}&action=${encodeURIComponent(action)}&location=${encodeURIComponent(loc)}&t=${now.getTime()}`;
 
                     try {
-                        // Use standard fetch to follow Google's internal redirects
-                        fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-cache' });
+                        // THE HANDSHAKE: Wait for actual response from Google
+                        const response = await fetch(url);
                         
-                        if (action === 'START') {
-                            localStorage.setItem("shiftStartTime", now.getTime());
-                            startTimer();
-                        } else if (action === 'END') {
-                            localStorage.removeItem("shiftStartTime");
-                            stopTimer();
+                        if (response.ok) {
+                            if (action === 'START') {
+                                localStorage.setItem("shiftStartTime", now.getTime());
+                                startTimer();
+                            } else if (action === 'END') {
+                                localStorage.removeItem("shiftStartTime");
+                                stopTimer();
+                            }
+                            alert(`✅ ${action} Confirmed and Logged.`);
+                        } else {
+                            throw new Error("Server rejected entry");
                         }
-                        
-                        alert(`✅ ${action} Recorded.`);
                     } catch (err) {
-                        alert("⚠️ System Busy. Checking connection...");
+                        alert("❌ CONNECTION ERROR: The sheet didn't receive your data. Move to better signal and try again.");
+                    } finally {
+                        btn.innerText = originalText;
+                        updateButtonStates();
                     }
-                }, () => alert("❌ GPS must be enabled to log shifts."), { enableHighAccuracy: true });
+                }, () => {
+                    alert("❌ GPS REQUIRED: Please enable location.");
+                    btn.innerText = originalText;
+                    updateButtonStates();
+                }, { enableHighAccuracy: true, timeout: 10000 });
             }
         }
 
-        function toggleButtons(isShiftActive) {
+        function updateButtonStates() {
+            const isShiftActive = localStorage.getItem("shiftStartTime") !== null;
             document.getElementById('startBtn').disabled = isShiftActive;
             document.getElementById('endBtn').disabled = !isShiftActive;
             document.getElementById('nightBtn').disabled = !isShiftActive;
@@ -171,8 +188,8 @@
 
         function startTimer() {
             const startTime = localStorage.getItem("shiftStartTime");
-            if (!startTime) { toggleButtons(false); return; }
-            toggleButtons(true);
+            if (!startTime) { updateButtonStates(); return; }
+            updateButtonStates();
             document.getElementById('shiftReminder').style.display = "block";
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
@@ -187,7 +204,7 @@
         function stopTimer() {
             clearInterval(timerInterval);
             document.getElementById('shiftReminder').style.display = "none";
-            toggleButtons(false);
+            updateButtonStates();
         }
 
         function checkLogin() {
@@ -206,13 +223,14 @@
             document.getElementById('loginOverlay').style.display = "none";
             document.getElementById('appContent').style.display = "flex";
             document.getElementById('welcomeUser').innerText = "Session Active: " + name;
-            if (localStorage.getItem("shiftStartTime")) startTimer(); else toggleButtons(false);
+            if (localStorage.getItem("shiftStartTime")) startTimer(); else updateButtonStates();
 
-            // Update Form Links
+            // Form Links
             document.getElementById('dailyCheckLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=${encodeURIComponent(name)}`;
             document.getElementById('trailerLink').href = `https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=${encodeURIComponent(name)}`;
             const email = validUsers[name] ? validUsers[name].email : "";
             document.getElementById('fuelLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=${encodeURIComponent(name)}&entry.342429911=${encodeURIComponent(email)}`;
+            document.getElementById('accidentLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSc6p6l1vN7-G3rZ_SInT-Z9vPUP6_S3iS5-v5Z-X6-0e-y-Sg/viewform?usp=pp_url&entry.123456789=${encodeURIComponent(name)}`;
         }
 
         function logout() { localStorage.clear(); location.reload(); }
