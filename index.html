@@ -107,8 +107,8 @@
         </div>
     </div>
     <script>
-        // Replace with your current deployed Web App URL
-        const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3yR4keAFWgkG_I0YE6xvw9ZgrNJlfdz8l6vnkG66f7PK3Kfkeuh9npOmx1ML6rcx8iA/exec";
+        // Updated Google Script URL
+        const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz2_-cu6eJtiWhPjn3Cl9cWxPq-_p03F9K6UQ__-RsW5QEeANRBQF9fw8TsE3t7_UAISg/exec";
         
         const validUsers = {
             "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
@@ -139,7 +139,6 @@
                 navigator.geolocation.getCurrentPosition((position) => {
                     const loc = position.coords.latitude + "," + position.coords.longitude;
                     
-                    // FORCED UK FORMAT WITH DAY NAME
                     const now = new Date();
                     const dayName = new Intl.DateTimeFormat('en-GB', { weekday: 'long' }).format(now);
                     const dateParts = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(now);
