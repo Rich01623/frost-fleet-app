@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Frost Fleet Compliance</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --fts-red: #E62411; --fts-dark: #2d3436; --bg-color: #f4f7f6; --card-bg: #ffffff; --night-blue: #34495e; --warning-yellow: #f1c40f; }
         .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 35px; background-color: #000; border-bottom: 2px solid var(--fts-red); z-index: 10001; }
@@ -88,7 +89,7 @@
         <div id="welcomeUser" class="welcome-text"></div>
         <div class="container">
             <div class="check-card">
-                <div class="status-badge">LIVE GPS TIMECLOCK</div>
+                <div class="status-badge">LIVE GPS TIMECLOCK (SUPABASE)</div>
                 <h2 class="card-title">Time sheet</h2>
                 <div class="shift-grid">
                     <button id="startBtn" class="btn btn-red" onclick="logShift('START')">START SHIFT</button>
@@ -106,9 +107,14 @@
             </div>
         </div>
     </div>
+
     <script>
-        // YOUR UPDATED GOOGLE SCRIPT URL
-        const MY_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdwHraDBYk1HmsYNVXQU3pktkwHjUB8WeRTZtY5k5OdrYdVw2l1uPoXU7016_xu9W3lA/exec";
+        // --- SUPABASE CONFIGURATION ---
+        const SUPABASE_URL = "https://mbudwnwxucluwgbkgbfx.supabase.co"; 
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idWR3bnd4dWNsdXdnYmtnYmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDQwMjYsImV4cCI6MjA5MDc4MDAyNn0.xFv-FiQ894vdfJuQYWQyF4WzQXmlnmnKvz_c8nuzl5Q"; 
+        
+        // Initialize Supabase Client
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         const validUsers = {
             "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
@@ -136,7 +142,6 @@
             if (!userName) return alert("Please log in again.");
 
             if (confirm(`Confirm ${action} for ${userName}?`)) {
-                // Visual feedback: Change button text to show we are waiting for Google
                 const btn = action === 'START' ? document.getElementById('startBtn') : (action === 'END' ? document.getElementById('endBtn') : document.getElementById('nightBtn'));
                 const originalText = btn.innerText;
                 btn.innerText = "UPLOADING...";
@@ -144,29 +149,35 @@
 
                 navigator.geolocation.getCurrentPosition(async (position) => {
                     const loc = position.coords.latitude + "," + position.coords.longitude;
-                    const now = new Date();
-                    
-                    // URL with Cache Buster
-                    const url = `${MY_GOOGLE_SCRIPT_URL}?name=${encodeURIComponent(userName)}&action=${encodeURIComponent(action)}&location=${encodeURIComponent(loc)}&t=${now.getTime()}`;
+                    const driverEmail = validUsers[userName] ? validUsers[userName].email : "unknown@frost.co.uk";
 
                     try {
-                        // THE HANDSHAKE: Wait for actual response from Google
-                        const response = await fetch(url);
-                        
-                        if (response.ok) {
-                            if (action === 'START') {
-                                localStorage.setItem("shiftStartTime", now.getTime());
-                                startTimer();
-                            } else if (action === 'END') {
-                                localStorage.removeItem("shiftStartTime");
-                                stopTimer();
-                            }
-                            alert(`✅ ${action} Confirmed and Logged.`);
-                        } else {
-                            throw new Error("Server rejected entry");
+                        // Send data to Supabase table 'fleet_logs'
+                        const { error } = await _supabase
+                            .from('fleet_logs')
+                            .insert([
+                                { 
+                                    driver_name: userName, 
+                                    driver_email: driverEmail,
+                                    action_type: action, 
+                                    coordinates: loc 
+                                }
+                            ]);
+
+                        if (error) throw error;
+
+                        if (action === 'START') {
+                            localStorage.setItem("shiftStartTime", new Date().getTime());
+                            startTimer();
+                        } else if (action === 'END') {
+                            localStorage.removeItem("shiftStartTime");
+                            stopTimer();
                         }
+                        alert(`✅ ${action} Recorded.`);
+                        
                     } catch (err) {
-                        alert("❌ CONNECTION ERROR: The sheet didn't receive your data. Move to better signal and try again.");
+                        console.error("Supabase Log Error:", err);
+                        alert("❌ DATABASE ERROR: Could not save entry. Make sure Row Level Security (RLS) is configured to allow 'Insert' for Anon users.");
                     } finally {
                         btn.innerText = originalText;
                         updateButtonStates();
@@ -225,7 +236,7 @@
             document.getElementById('welcomeUser').innerText = "Session Active: " + name;
             if (localStorage.getItem("shiftStartTime")) startTimer(); else updateButtonStates();
 
-            // Form Links
+            // Link updates (Keeping these for your existing Google Forms)
             document.getElementById('dailyCheckLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=${encodeURIComponent(name)}`;
             document.getElementById('trailerLink').href = `https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=${encodeURIComponent(name)}`;
             const email = validUsers[name] ? validUsers[name].email : "";
