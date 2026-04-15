@@ -38,6 +38,10 @@
         .btn-blue { background: var(--night-blue); }
         .btn:disabled { background: #ccc !important; color: #888 !important; cursor: not-allowed; opacity: 0.6; }
         
+        /* New Styles for the Notes Input */
+        .notes-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin: 15px 0 10px 0; box-sizing: border-box; font-size: 14px; outline: none; }
+        .btn-small { padding: 10px; font-size: 13px; background: #2d3436; }
+
         .shift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
         .full-width { grid-column: span 2; }
 
@@ -67,18 +71,14 @@
         <div class="ticker-wrap"><div class="ticker">
             <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
             <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
-            <div class="ticker__item">FUEL CARD: FUEL WISE</div>
             <div class="ticker__item">OFFICE: 01949 480130</div>
             <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
-            <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
-            <div class="ticker__item">FUEL CARD: FUEL WISE</div>
-            <div class="ticker__item">OFFICE: 01949 480130</div>
         </div></div>
         <header><div id="menuBtn" onclick="openNav()">☰</div></header>
         <div id="sideMenu">
             <div class="menu-label">Security</div>
             <div class="menu-item">Gate Code: <b>3684</b></div>
-            <div class="menu-label">Support</div>
+            <div class="menu-label">Support Management</div>
             <a href="tel:07701238561">David Jayes</a>
             <a href="tel:01949480130">Office</a>
             <div class="menu-label">Account</div>
@@ -87,9 +87,10 @@
         </div>
         <img src="logo.png" class="logo" alt="Frost Haulage">
         <div id="welcomeUser" class="welcome-text"></div>
+
         <div class="container">
             <div class="check-card">
-                <div class="status-badge">LIVE GPS TIMECLOCK (SUPABASE)</div>
+                <div class="status-badge">LIVE GPS TIMECLOCK</div>
                 <h2 class="card-title">Time sheet</h2>
                 <div class="shift-grid">
                     <button id="startBtn" class="btn btn-red" onclick="logShift('START')">START SHIFT</button>
@@ -97,7 +98,16 @@
                     <button id="nightBtn" class="btn btn-blue full-width" onclick="logShift('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
                 </div>
             </div>
+
+            <div class="check-card" style="border-top-color: #636e72;">
+                <div class="status-badge">SHIFT NOTES</div>
+                <h2 class="card-title">Other Work / Notes</h2>
+                <input type="text" id="shiftNotesInput" class="notes-input" placeholder="Record after hours work here...">
+                <button id="submitNoteBtn" class="btn btn-small" onclick="submitNote()">SUBMIT NOTE</button>
+            </div>
+
             <div class="check-card"><div class="status-badge">DVSA COMPLIANCE</div><h2 class="card-title">Daily Vehicle Check</h2><a href="#" id="dailyCheckLink" class="btn btn-red">Start checks</a></div>
+            
             <div class="check-card" style="border-top-color: var(--fts-dark);"><div class="status-badge">FLEET OPERATIONS</div><h2 class="card-title">Daily trailer checks.</h2><a href="#" id="trailerLink" class="btn">Start checks</a></div>
             <div class="check-card" style="border-top-color: #34495e;"><div class="status-badge">COST MANAGEMENT</div><h2 class="card-title">Fuel Log</h2><a href="#" id="fuelLink" class="btn" style="background: #34495e;">Submit Fuel Entry</a></div>
             <div class="check-card" style="border-top-color: #000000; background: #fff5f5;">
@@ -109,23 +119,16 @@
     </div>
 
     <script>
-        // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = "https://mbudwnwxucluwgbkgbfx.supabase.co"; 
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idWR3bnd4dWNsdXdnYmtnYmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDQwMjYsImV4cCI6MjA5MDc4MDAyNn0.xFv-FiQ894vdfJuQYWQyF4WzQXmlnmnKvz_c8nuzl5Q"; 
-        
-        // Initialize Supabase Client
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         const validUsers = {
-            "martyn bassford": { pass: "mb26", email: "richard@frosthaulage.co.uk" },
-            "richard dickens": { pass: "rd26", email: "richard@frosthaulage.co.uk" },
+            "frost": { pass: "Haulage2026", email: "richard@frosthaulage.co.uk" },
+            "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
             "andy west": { pass: "aw26", email: "a.west1fts@gmail.com" },
             "callum lee": { pass: "ca26", email: "c.lee1fts@gmail.com" },
-            "ricardo morais": { pass: "rm26", email: "i.bason1fts@gmail.com" },
-	        "marco marco": { pass: "mm26", email: "i.bason1fts@gmail.com" },
-	        "darren brown": { pass: "db26", email: "i.bason1fts@gmail.com" },
-	        "dean young": { pass: "dy26", email: "i.bason1fts@gmail.com" },  
-	        "barry ashmore": { pass: "ba26", email: "i.bason1fts@gmail.com" },
+            "ian bason": { pass: "ib26", email: "i.bason1fts@gmail.com" },
             "josh harrison": { pass: "jh26", email: "j.harrison1fts@gmail.com" },
             "lee woodcock": { pass: "lw26", email: "l.woodcock1fts@gmail.com" },
             "marc wickham": { pass: "mw26", email: "m.wickham1fts@gmail.com" },
@@ -133,65 +136,74 @@
             "richard spence": { pass: "rs26", email: "r.spence1fts@gmail.com" },
             "roy taylor": { pass: "rt26", email: "r.taylor1fts@gmail.com" },
             "stuart sleigh": { pass: "ss26", email: "s.sleigh1fts@gmail.com" },
-            "jon hulbert": { pass: "hb26", email: "t.broomhead1fts@gmail.com" },
+            "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" },
             "richard robinson": { pass: "rr26", email: "robinson01623@gmail.com" },
-            "andy carter": { pass: "ac26", email: "j.hulbert1fts@gmail.com" },
+            "jon hulbert": { pass: "jh26", email: "j.hulbert1fts@gmail.com" },
             "chris frost": { pass: "cf26", email: "c.frost1fts@gmail.com" }
         };
 
         let timerInterval;
 
-        async function logShift(action) {
+        async function logShift(action, noteText = null) {
             const userName = localStorage.getItem("frostUserName");
             if (!userName) return alert("Please log in again.");
 
-            if (confirm(`Confirm ${action} for ${userName}?`)) {
-                const btn = action === 'START' ? document.getElementById('startBtn') : (action === 'END' ? document.getElementById('endBtn') : document.getElementById('nightBtn'));
-                const originalText = btn.innerText;
-                btn.innerText = "UPLOADING...";
-                btn.disabled = true;
+            // Standard Shift Buttons (Confirm needed)
+            if (action !== 'NOTE' && !confirm(`Confirm ${action} for ${userName}?`)) return;
 
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    const loc = position.coords.latitude + "," + position.coords.longitude;
-                    const driverEmail = validUsers[userName] ? validUsers[userName].email : "unknown@frost.co.uk";
+            const btnId = action === 'START' ? 'startBtn' : (action === 'END' ? 'endBtn' : (action === 'NOTE' ? 'submitNoteBtn' : 'nightBtn'));
+            const btn = document.getElementById(btnId);
+            const originalText = btn.innerText;
+            
+            btn.innerText = "SAVING...";
+            btn.disabled = true;
 
-                    try {
-                        // Send data to Supabase table 'fleet_logs'
-                        const { error } = await _supabase
-                            .from('fleet_logs')
-                            .insert([
-                                { 
-                                    driver_name: userName, 
-                                    driver_email: driverEmail,
-                                    action_type: action, 
-                                    coordinates: loc 
-                                }
-                            ]);
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const loc = position.coords.latitude + "," + position.coords.longitude;
+                const driverEmail = validUsers[userName] ? validUsers[userName].email : "unknown@frost.co.uk";
 
-                        if (error) throw error;
+                try {
+                    const { error } = await _supabase
+                        .from('fleet_logs')
+                        .insert([{ 
+                            driver_name: userName, 
+                            driver_email: driverEmail,
+                            action_type: action, 
+                            coordinates: loc,
+                            notes_text: noteText 
+                        }]);
 
-                        if (action === 'START') {
-                            localStorage.setItem("shiftStartTime", new Date().getTime());
-                            startTimer();
-                        } else if (action === 'END') {
-                            localStorage.removeItem("shiftStartTime");
-                            stopTimer();
-                        }
-                        alert(`✅ ${action} Recorded.`);
-                        
-                    } catch (err) {
-                        console.error("Supabase Log Error:", err);
-                        alert("❌ DATABASE ERROR: Could not save entry. Make sure Row Level Security (RLS) is configured to allow 'Insert' for Anon users.");
-                    } finally {
-                        btn.innerText = originalText;
-                        updateButtonStates();
+                    if (error) throw error;
+
+                    if (action === 'START') {
+                        localStorage.setItem("shiftStartTime", new Date().getTime());
+                        startTimer();
+                    } else if (action === 'END') {
+                        localStorage.removeItem("shiftStartTime");
+                        stopTimer();
+                    } else if (action === 'NOTE') {
+                        document.getElementById('shiftNotesInput').value = ""; // Clear on success
                     }
-                }, () => {
-                    alert("❌ GPS REQUIRED: Please enable location.");
+                    
+                    alert(`✅ Successfully Saved.`);
+                } catch (err) {
+                    console.error(err);
+                    alert("❌ ERROR: Database sync failed.");
+                } finally {
                     btn.innerText = originalText;
                     updateButtonStates();
-                }, { enableHighAccuracy: true, timeout: 10000 });
-            }
+                }
+            }, () => {
+                alert("❌ GPS REQUIRED.");
+                btn.innerText = originalText;
+                updateButtonStates();
+            });
+        }
+
+        async function submitNote() {
+            const noteText = document.getElementById('shiftNotesInput').value.trim();
+            if (!noteText) return alert("Please enter a note first.");
+            await logShift('NOTE', noteText);
         }
 
         function updateButtonStates() {
@@ -240,7 +252,7 @@
             document.getElementById('welcomeUser').innerText = "Session Active: " + name;
             if (localStorage.getItem("shiftStartTime")) startTimer(); else updateButtonStates();
 
-            // Link updates (Keeping these for your existing Google Forms)
+            // Form Links
             document.getElementById('dailyCheckLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=${encodeURIComponent(name)}`;
             document.getElementById('trailerLink').href = `https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=${encodeURIComponent(name)}`;
             const email = validUsers[name] ? validUsers[name].email : "";
