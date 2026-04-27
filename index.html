@@ -6,62 +6,61 @@
     <title>Frost Fleet Compliance</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --fts-red: #E62411; --fts-dark: #2d3436; --bg-color: #f4f7f6; --card-bg: #ffffff; --night-blue: #34495e; --warning-yellow: #f1c40f; }
+        :root { 
+            --fts-red: #E62411; --fts-dark: #1a1d1e; --bg-color: #121212; 
+            --card-bg: #1e1e1e; --text-main: #e0e0e0; --text-dim: #b0b0b0;
+            --border-color: #333333; --night-blue: #34495e; --warning-yellow: #f1c40f; 
+        }
+
         .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 35px; background-color: #000; border-bottom: 2px solid var(--fts-red); z-index: 10001; }
         .ticker { display: inline-block; white-space: nowrap; height: 35px; line-height: 35px; animation: ticker-move 25s linear infinite; }
         .ticker__item { display: inline-block; padding: 0 40px; font-size: 13px; color: white; font-weight: bold; text-transform: uppercase; }
         @keyframes ticker-move { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-box { width: 85%; max-width: 320px; text-align: center; }
-        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .login-box button { width: 100%; padding: 15px; background: var(--fts-red); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        
-        #appContent { display: none; width: 100%; flex-direction: column; align-items: center; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 100px; }
-        header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: white; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        #menuBtn { font-size: 26px; color: var(--fts-red); cursor: pointer; padding: 4px 12px; border: 1px solid #eee; border-radius: 8px; background: white; }
+        body { margin: 0; padding: 0; font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 100px; }
+        header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: var(--card-bg); z-index: 100; border-bottom: 1px solid var(--border-color); }
+        #menuBtn { font-size: 26px; color: var(--fts-red); cursor: pointer; padding: 4px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); }
         
         #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 80px; }
-        #sideMenu a, .menu-item { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        #sideMenu a { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { width: 85%; max-width: 320px; text-align: center; }
+        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid var(--border-color); border-radius: 10px; background: #222; color: white; box-sizing: border-box; font-size: 16px; }
         
-        .menu-label { color: #ffffff !important; font-size: 13px; padding: 20px 20px 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; }
+        #appContent { display: none; width: 100%; flex-direction: column; align-items: center; }
         .logo { max-width: 160px; margin: 10px 0 20px 0; }
-        .welcome-text { font-size: 16px; font-weight: 500; color: #636e72; margin-bottom: 25px; text-transform: capitalize; }
-        .container { width: 90%; max-width: 420px; text-align: center; }
-        .check-card { background: var(--card-bg); border: 1px solid #e0e6ed; border-top: 4px solid var(--fts-red); border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; text-align: left; }
-        .status-badge { font-size: 10px; font-weight: 800; color: #6c757d; background: #f8f9fa; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px; border: 1px solid #dee2e6; }
-        .card-title { margin: 0; color: #2d3436; font-size: 19px; font-weight: 700; }
+        .container { width: 90%; max-width: 420px; }
         
-        .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: block; border: none; cursor: pointer; transition: 0.2s; width: 100%; }
-        .btn-red { background: var(--fts-red); }
-        .btn-blue { background: var(--night-blue); }
-        .btn:disabled { background: #ccc !important; color: #888 !important; cursor: not-allowed; opacity: 0.6; }
+        .check-card { background: var(--card-bg); border: 1px solid var(--border-color); border-top: 4px solid var(--fts-red); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .status-badge { font-size: 10px; font-weight: 800; color: #fff; background: #333; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+        .card-title { margin: 0; color: #fff; font-size: 18px; font-weight: 700; }
         
-        /* New Styles for the Notes Input */
-        .notes-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin: 15px 0 10px 0; box-sizing: border-box; font-size: 14px; outline: none; }
-        .btn-small { padding: 10px; font-size: 13px; background: #2d3436; }
+        .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; border: 1px solid #444; margin-top: 10px; box-sizing: border-box; }
+        .btn-red { background: var(--fts-red); border: none; }
+        .btn-blue { background: var(--night-blue); border: none; }
+        .btn:disabled { opacity: 0.5; }
+        
+        .notes-input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin: 8px 0; background: #222; color: #fff; box-sizing: border-box; font-size: 14px; }
+        .defect-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
+        .toggle-btn { padding: 6px 12px; font-size: 10px; font-weight: bold; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444; }
+        .toggle-btn.active-ok { background: #27ae60; border-color: #27ae60; }
+        .toggle-btn.active-fail { background: var(--fts-red); border-color: var(--fts-red); }
 
-        .shift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .full-width { grid-column: span 2; }
-
-        #shiftReminder { 
-            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--warning-yellow); 
-            color: #000; text-align: center; padding: 18px 10px; font-weight: 800; 
-            font-size: 15px; z-index: 10002; display: none; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            border-top: 4px solid #000;
-        }
+        #shiftReminder { position: fixed; bottom: 0; width: 100%; background: var(--warning-yellow); color: #000; text-align: center; padding: 15px; font-weight: 800; z-index: 10002; display: none; }
+        .form-label { font-size: 11px; font-weight: bold; color: var(--text-dim); text-transform: uppercase; margin-top: 10px; display: block; }
     </style>
 </head>
 <body>
+
     <div id="loginOverlay">
-        <img src="logo.png" class="logo" alt="Frost Haulage">
+        <img src="logo.png" class="logo">
         <div class="login-box">
-            <h3 style="color: var(--fts-red); margin-bottom: 20px;">Fleet Portal Access</h3>
+            <h3 style="color: var(--fts-red);">Fleet Portal Access</h3>
             <input type="text" id="username" placeholder="Full Name">
             <input type="password" id="password" placeholder="Password">
-            <button onclick="checkLogin()">Login</button>
-            <p id="errorMsg" style="color: red; font-size: 13px; display: none; margin-top: 15px;">Invalid Credentials.</p>
+            <button class="btn btn-red" onclick="checkLogin()">Login</button>
+            <p id="errorMsg" style="color: var(--fts-red); display:none; margin-top:10px;">Invalid Credentials.</p>
         </div>
     </div>
 
@@ -69,51 +68,82 @@
 
     <div id="appContent">
         <div class="ticker-wrap"><div class="ticker">
-            <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
-            <div class="ticker__item">YARD UPDATE: GATE CODE 3684</div>
+            <div class="ticker__item">FROST HAULAGE: DRIVE SAFE</div>
+            <div class="ticker__item">GATE CODE: 3684</div>
             <div class="ticker__item">OFFICE: 01949 480130</div>
-            <div class="ticker__item">FROST HAULAGE: DRIVE SAFE & STAY COMPLIANT</div>
         </div></div>
+
         <header><div id="menuBtn" onclick="openNav()">☰</div></header>
+
         <div id="sideMenu">
-            <div class="menu-label">Security</div>
-            <div class="menu-item">Gate Code: <b>3684</b></div>
-            <div class="menu-label">Support Management</div>
-            <a href="tel:07701238561">David Jayes</a>
-            <a href="tel:01949480130">Office</a>
-            <div class="menu-label">Account</div>
-            <a onclick="logout()" style="color: #ffcccc !important; cursor:pointer;">Log Out</a>
-            <div onclick="closeNav()" style="padding: 20px; color: white; cursor: pointer; text-align: center; opacity: 0.8; font-size: 14px;">✕ Close Menu</div>
+            <a onclick="logout()">Log Out</a>
+            <div onclick="closeNav()" style="padding:20px; color:white;">✕ Close</div>
         </div>
-        <img src="logo.png" class="logo" alt="Frost Haulage">
-        <div id="welcomeUser" class="welcome-text"></div>
+
+        <img src="logo.png" class="logo">
+        <div id="welcomeUser" style="color:var(--text-dim); margin-bottom:20px; font-weight:500;"></div>
 
         <div class="container">
             <div class="check-card">
-                <div class="status-badge">LIVE GPS TIMECLOCK</div>
-                <h2 class="card-title">Time sheet</h2>
-                <div class="shift-grid">
+                <div class="status-badge">TIMECLOCK</div>
+                <h2 class="card-title">Shift Tracking</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
                     <button id="startBtn" class="btn btn-red" onclick="logShift('START')">START SHIFT</button>
                     <button id="endBtn" class="btn" onclick="logShift('END')">END SHIFT</button>
-                    <button id="nightBtn" class="btn btn-blue full-width" onclick="logShift('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
+                    <button id="nightBtn" class="btn btn-blue" style="grid-column: span 2;" onclick="logShift('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
                 </div>
             </div>
 
-            <div class="check-card" style="border-top-color: #636e72;">
-                <div class="status-badge">SHIFT NOTES</div>
+            <div class="check-card">
+                <div class="status-badge">NOTES</div>
                 <h2 class="card-title">Other Work / Notes</h2>
-                <input type="text" id="shiftNotesInput" class="notes-input" placeholder="Record after hours work here...">
-                <button id="submitNoteBtn" class="btn btn-small" onclick="submitNote()">SUBMIT NOTE</button>
+                <input type="text" id="shiftNotesInput" class="notes-input" placeholder="Record extra work here...">
+                <button class="btn" onclick="submitNote()" style="padding:10px; font-size:13px;">SUBMIT NOTE</button>
             </div>
 
-            <div class="check-card"><div class="status-badge">DVSA COMPLIANCE</div><h2 class="card-title">Daily Vehicle Check</h2><a href="#" id="dailyCheckLink" class="btn btn-red">Start checks</a></div>
-            
-            <div class="check-card" style="border-top-color: var(--fts-dark);"><div class="status-badge">FLEET OPERATIONS</div><h2 class="card-title">Daily trailer checks.</h2><a href="#" id="trailerLink" class="btn">Start checks</a></div>
-            <div class="check-card" style="border-top-color: #34495e;"><div class="status-badge">COST MANAGEMENT</div><h2 class="card-title">Fuel Log</h2><a href="#" id="fuelLink" class="btn" style="background: #34495e;">Submit Fuel Entry</a></div>
-            <div class="check-card" style="border-top-color: #000000; background: #fff5f5;">
-                <div class="status-badge" style="background: #000; color: #fff;">EMERGENCY RESPONSE</div>
-                <h2 class="card-title">Report an Accident</h2>
-                <a href="#" id="accidentLink" target="_blank" class="btn" style="background: #000; margin-top:15px;">I'VE HAD AN ACCIDENT</a>
+            <div class="check-card">
+                <div class="status-badge">DVSA COMPLIANCE</div>
+                <h2 class="card-title">Daily Vehicle Check</h2>
+                <button class="btn btn-red" onclick="toggleForm('vehicleCheckForm')">START VEHICLE CHECK</button>
+                <div id="vehicleCheckForm" style="display:none; margin-top:15px; border-top: 1px solid #333; padding-top:10px;">
+                    <span class="form-label">Vehicle Registration</span>
+                    <select id="regNo" class="notes-input"></select>
+                    <span class="form-label">Odometer Reading</span>
+                    <input type="number" id="mileage" class="notes-input" placeholder="Current Miles">
+                    <div id="vehicleDefectList"></div>
+                    <span class="form-label">Fail Details / Notes</span>
+                    <textarea id="checkNotes" class="notes-input" placeholder="Explain any fails..." rows="2"></textarea>
+                    <button id="saveCheckBtn" class="btn btn-red" onclick="submitVehicleCheck()">SUBMIT COMPLIANCE</button>
+                </div>
+            </div>
+
+            <div class="check-card">
+                <div class="status-badge">FLEET OPS</div>
+                <h2 class="card-title">Trailer Check</h2>
+                <button class="btn" onclick="toggleForm('trailerCheckForm')">START TRAILER CHECK</button>
+                <div id="trailerCheckForm" style="display:none; margin-top:15px; border-top: 1px solid #333; padding-top:10px;">
+                    <span class="form-label">Trailer ID</span>
+                    <select id="trailerNo" class="notes-input"></select>
+                    <div id="trailerDefectList"></div>
+                    <span class="form-label">Maintenance Notes</span>
+                    <textarea id="trailerNotes" class="notes-input" placeholder="Notes for the 'notes' column..."></textarea>
+                    <button id="saveTrailerBtn" class="btn btn-red" onclick="submitTrailerCheck()">SUBMIT TRAILER DATA</button>
+                </div>
+            </div>
+
+            <div class="check-card" style="border-top-color: #34495e;">
+                <div class="status-badge">COST CONTROL</div>
+                <h2 class="card-title">Fuel Log</h2>
+                <button class="btn btn-blue" onclick="toggleForm('fuelForm')">LOG FUEL ENTRY</button>
+                <div id="fuelForm" style="display:none; margin-top:15px; border-top: 1px solid #333; padding-top:10px;">
+                    <span class="form-label">Vehicle</span>
+                    <select id="fuelRegNo" class="notes-input"></select>
+                    <span class="form-label">Total Litres</span>
+                    <input type="number" step="0.01" id="fuelLitres" class="notes-input" placeholder="0.00">
+                    <span class="form-label">Total Price (£)</span>
+                    <input type="number" step="0.01" id="fuelPrice" class="notes-input" placeholder="0.00">
+                    <button id="saveFuelBtn" class="btn btn-blue" onclick="submitFuel()">SAVE FUEL LOG</button>
+                </div>
             </div>
         </div>
     </div>
@@ -122,148 +152,153 @@
         const SUPABASE_URL = "https://mbudwnwxucluwgbkgbfx.supabase.co"; 
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idWR3bnd4dWNsdXdnYmtnYmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDQwMjYsImV4cCI6MjA5MDc4MDAyNn0.xFv-FiQ894vdfJuQYWQyF4WzQXmlnmnKvz_c8nuzl5Q"; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        const validUsers = {
-            "barrie ashmore": { pass: "ba26", email: "richard@frosthaulage.co.uk" },
-            "richard": { pass: "Frost2026", email: "richard@frosthaulage.co.uk" },
-            "andy west": { pass: "aw26", email: "a.west1fts@gmail.com" },
-            "callum lee": { pass: "ca26", email: "c.lee1fts@gmail.com" },
-            "ian bason": { pass: "ib26", email: "i.bason1fts@gmail.com" },
-            "josh harrison": { pass: "jh26", email: "j.harrison1fts@gmail.com" },
-            "lee woodcock": { pass: "lw26", email: "l.woodcock1fts@gmail.com" },
-            "marc wickham": { pass: "mw26", email: "m.wickham1fts@gmail.com" },
-            "neil woods": { pass: "nw26", email: "n.wood1fts@gmail.com" },
-            "richard spence": { pass: "rs26", email: "r.spence1fts@gmail.com" },
-            "roy taylor": { pass: "rt26", email: "r.taylor1fts@gmail.com" },
-            "stuart sleigh": { pass: "ss26", email: "s.sleigh1fts@gmail.com" },
-            "thomas broomhead": { pass: "tb26", email: "t.broomhead1fts@gmail.com" },
-            "richard robinson": { pass: "rr26", email: "robinson01623@gmail.com" },
-            "jon hulbert": { pass: "jh26", email: "j.hulbert1fts@gmail.com" },
-            "chris frost": { pass: "cf26", email: "c.frost1fts@gmail.com" }
-        };
+
+        const fleetVehicles = ["BX15 JSU", "FD65 VZA", "FJ17 OPT", "FJ69 WMC", "FJ69 WML", "FN21 HLZ", "FR72 FTS", "FS72 FTS", "FT72 FTS", "HS19 YNH", "KU70 XNR", "KU70 XNS", "KU70 XNT", "KU70 XNV", "KU70 XNW", "KU70 XNX", "PN19 HDL"];
+        const fleetTrailers = ["FTSTR01","FTSTR02","FTSTR30","FTSTR41","FTSTR42","FTSTR44","FTSTR45","FTSTR46","FTSTR03","FTSTR04","FTSTR05","FTSTR09","FTSTR11","FTSTR12","FTSTR17","FTSTR21","FTSTR22","FTSTR23","FTSTR24","FTSTR25","FTSTR26","FTSTR27","FTSTR28","FTSTR31","FTSTR60","FTSTR61","FTSTR62","FTSTR63","FTSTR64"];
+        const vehicleItems = ["Lights & Indicators","Tyre Condition","Wheel Nuts","Mirrors & Glass","Bodywork","Wipers/Washers","Oil/Coolant Levels","AdBlue Level","Air Lines/Suzies","5th Wheel/Clip"];
+        const trailerItems = ["Tyres","Wheel nuts","Brake connections","Air lines","Lights","Body/Curtains","Landing legs","ABS/EBS Light"];
+
+        const validUsers = { "frost": "Haulage2026", "richard": "Frost2026", "andy west": "aw26", "callum lee": "ca26", "ian bason": "ib26", "josh harrison": "jh26", "lee woodcock": "lw26", "marc wickham": "mw26", "neil wood": "nw26", "richard spence": "rs26", "roy taylor": "rt26", "stuart sleigh": "ss26", "thomas broomhead": "tb26", "richard robinson": "rr26", "jon hulbert": "jh26", "chris frost": "cf26" };
 
         let timerInterval;
 
-        async function logShift(action, noteText = null) {
-            const userName = localStorage.getItem("frostUserName");
-            if (!userName) return alert("Please log in again.");
-
-            // Standard Shift Buttons (Confirm needed)
-            if (action !== 'NOTE' && !confirm(`Confirm ${action} for ${userName}?`)) return;
-
-            const btnId = action === 'START' ? 'startBtn' : (action === 'END' ? 'endBtn' : (action === 'NOTE' ? 'submitNoteBtn' : 'nightBtn'));
-            const btn = document.getElementById(btnId);
-            const originalText = btn.innerText;
-            
-            btn.innerText = "SAVING...";
-            btn.disabled = true;
-
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                const loc = position.coords.latitude + "," + position.coords.longitude;
-                const driverEmail = validUsers[userName] ? validUsers[userName].email : "unknown@frost.co.uk";
-
-                try {
-                    const { error } = await _supabase
-                        .from('fleet_logs')
-                        .insert([{ 
-                            driver_name: userName, 
-                            driver_email: driverEmail,
-                            action_type: action, 
-                            coordinates: loc,
-                            notes_text: noteText 
-                        }]);
-
-                    if (error) throw error;
-
-                    if (action === 'START') {
-                        localStorage.setItem("shiftStartTime", new Date().getTime());
-                        startTimer();
-                    } else if (action === 'END') {
-                        localStorage.removeItem("shiftStartTime");
-                        stopTimer();
-                    } else if (action === 'NOTE') {
-                        document.getElementById('shiftNotesInput').value = ""; // Clear on success
-                    }
-                    
-                    alert(`✅ Successfully Saved.`);
-                } catch (err) {
-                    console.error(err);
-                    alert("❌ ERROR: Database sync failed.");
-                } finally {
-                    btn.innerText = originalText;
-                    updateButtonStates();
-                }
-            }, () => {
-                alert("❌ GPS REQUIRED.");
-                btn.innerText = originalText;
-                updateButtonStates();
-            });
-        }
-
-        async function submitNote() {
-            const noteText = document.getElementById('shiftNotesInput').value.trim();
-            if (!noteText) return alert("Please enter a note first.");
-            await logShift('NOTE', noteText);
-        }
-
-        function updateButtonStates() {
-            const isShiftActive = localStorage.getItem("shiftStartTime") !== null;
-            document.getElementById('startBtn').disabled = isShiftActive;
-            document.getElementById('endBtn').disabled = !isShiftActive;
-            document.getElementById('nightBtn').disabled = !isShiftActive;
-        }
-
-        function startTimer() {
-            const startTime = localStorage.getItem("shiftStartTime");
-            if (!startTime) { updateButtonStates(); return; }
-            updateButtonStates();
-            document.getElementById('shiftReminder').style.display = "block";
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const now = new Date().getTime();
-                const diff = now - startTime;
-                const h = Math.floor(diff / (1000 * 60 * 60));
-                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                document.getElementById('shiftDuration').innerText = `${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m`;
-            }, 1000);
-        }
-
-        function stopTimer() {
-            clearInterval(timerInterval);
-            document.getElementById('shiftReminder').style.display = "none";
-            updateButtonStates();
-        }
-
-        function checkLogin() {
-            const user = document.getElementById('username').value.toLowerCase().trim();
-            const pass = document.getElementById('password').value.trim();
-            if (validUsers[user] && validUsers[user].pass === pass) {
-                localStorage.setItem("frostLoggedIn", "true"); 
-                localStorage.setItem("frostUserName", user);
-                showDashboard(user);
-            } else { 
-                document.getElementById('errorMsg').style.display = "block"; 
+        function toggleForm(id) {
+            const f = document.getElementById(id);
+            f.style.display = f.style.display === "none" ? "block" : "none";
+            if(f.style.display === "block") {
+                if(id === 'vehicleCheckForm') initChecklist('vehicleDefectList', vehicleItems, 'v');
+                if(id === 'trailerCheckForm') initChecklist('trailerDefectList', trailerItems, 't');
             }
         }
 
-        function showDashboard(name) {
-            document.getElementById('loginOverlay').style.display = "none";
-            document.getElementById('appContent').style.display = "flex";
-            document.getElementById('welcomeUser').innerText = "Session Active: " + name;
-            if (localStorage.getItem("shiftStartTime")) startTimer(); else updateButtonStates();
+        function initChecklist(id, items, prefix) {
+            const container = document.getElementById(id); container.innerHTML = "";
+            items.forEach((item, i) => {
+                container.innerHTML += `<div class="defect-item"><span>${item}</span><div>
+                    <button class="toggle-btn active-ok" id="${prefix}-ok-${i}" onclick="setTog('${prefix}', ${i}, 'OK')">OK</button>
+                    <button class="toggle-btn" id="${prefix}-fail-${i}" onclick="setTog('${prefix}', ${i}, 'FAIL')">FAIL</button>
+                </div></div>`;
+            });
+        }
 
-            // Form Links
-            document.getElementById('dailyCheckLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSemhiTzJ-hzYzn0TTzPZf1436oZ3MZZUzWl7UQxdLwxyRkZ7w/viewform?usp=pp_url&entry.585693254=${encodeURIComponent(name)}`;
-            document.getElementById('trailerLink').href = `https://docs.google.com/forms/d/1aMGoArb0Vp2lZX3m6gKQnYAplr6B8oDfdrGqDMJDz-A/viewform?entry.2036897075=${encodeURIComponent(name)}`;
-            const email = validUsers[name] ? validUsers[name].email : "";
-            document.getElementById('fuelLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSdiPCfNcAOnN_ZZYPnBBzJDrbup2ZInButW3K_RniziV32TDg/viewform?usp=pp_url&entry.1436863426=${encodeURIComponent(name)}&entry.342429911=${encodeURIComponent(email)}`;
-            document.getElementById('accidentLink').href = `https://docs.google.com/forms/d/e/1FAIpQLSc6p6l1vN7-G3rZ_SInT-Z9vPUP6_S3iS5-v5Z-X6-0e-y-Sg/viewform?usp=pp_url&entry.123456789=${encodeURIComponent(name)}`;
+        function setTog(prefix, i, s) {
+            const ok = document.getElementById(`${prefix}-ok-${i}`), fail = document.getElementById(`${prefix}-fail-${i}`);
+            ok.className = s === 'OK' ? 'toggle-btn active-ok' : 'toggle-btn';
+            fail.className = s === 'FAIL' ? 'toggle-btn active-fail' : 'toggle-btn';
+        }
+
+        async function logShift(action, noteText = null) {
+            const user = localStorage.getItem("frostUserName");
+            if (!user) return;
+            if (action !== 'NOTE' && !confirm(`Confirm ${action}?`)) return;
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                try {
+                    await _supabase.from('fleet_logs').insert([{ 
+                        driver_name: user, action_type: action, coordinates: pos.coords.latitude + "," + pos.coords.longitude, notes_text: noteText 
+                    }]);
+                    if (action === 'START') { localStorage.setItem("shiftStartTime", new Date().getTime()); startTimer(); }
+                    else if (action === 'END') { localStorage.removeItem("shiftStartTime"); stopTimer(); }
+                    alert(`✅ ${action} Recorded`);
+                } catch (e) { alert(e.message); }
+                updateButtons();
+            }, () => alert("GPS Required"), { timeout: 8000 });
+        }
+
+        async function submitVehicleCheck() {
+            const reg = document.getElementById('regNo').value;
+            const miles = document.getElementById('mileage').value;
+            if(!reg || !miles) return alert("Missing Reg or Mileage.");
+            let fails = [];
+            vehicleItems.forEach((item, i) => { if(document.getElementById(`v-fail-${i}`).classList.contains('active-fail')) fails.push(item); });
+            try {
+                await _supabase.from('daily_vehicle_checks').insert([{ 
+                    driver_name: localStorage.getItem("frostUserName"), registration: reg, mileage: parseInt(miles),
+                    condition_status: fails.length > 0 ? "DEFECTS" : "NIL DEFECTS",
+                    defect_details: (fails.length > 0 ? "FAILS: " + fails.join(", ") : "NIL") + " | " + document.getElementById('checkNotes').value
+                }]);
+                alert("✅ Submitted"); toggleForm('vehicleCheckForm');
+            } catch (e) { alert("Database Error: " + e.message); }
+        }
+
+        async function submitTrailerCheck() {
+            const trailer = document.getElementById('trailerNo').value;
+            if(!trailer) return alert("Select trailer.");
+            let fails = [];
+            trailerItems.forEach((item, i) => { if(document.getElementById(`t-fail-${i}`).classList.contains('active-fail')) fails.push(item); });
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                try {
+                    await _supabase.from('daily_trailer_checks').insert([{ 
+                        driver_name: localStorage.getItem("frostUserName"), trailer_number: trailer, 
+                        location: pos.coords.latitude + "," + pos.coords.longitude,
+                        notes: document.getElementById('trailerNotes').value,
+                        condition_status: fails.length > 0 ? "DEFECTS" : "NIL DEFECTS",
+                        defect_details: fails.length > 0 ? "FAILS: " + fails.join(", ") : "NIL"
+                    }]);
+                    alert("✅ Saved"); toggleForm('trailerCheckForm');
+                } catch (e) { alert(e.message); }
+            });
+        }
+
+        async function submitFuel() {
+            const reg = document.getElementById('fuelRegNo').value;
+            const lit = document.getElementById('fuelLitres').value;
+            const prc = document.getElementById('fuelPrice').value;
+            if(!reg || !lit || !prc) return alert("Fill all fields.");
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                try {
+                    await _supabase.from('fuel_logs').insert([{ 
+                        driver_name: localStorage.getItem("frostUserName"), vehicle_reg: reg, 
+                        litres: parseFloat(lit), price: parseFloat(prc),
+                        coordinates: pos.coords.latitude + "," + pos.coords.longitude
+                    }]);
+                    alert("✅ Fuel Saved"); toggleForm('fuelForm');
+                } catch (e) { alert(e.message); }
+            });
+        }
+
+        async function submitNote() { const t = document.getElementById('shiftNotesInput').value; if(t) await logShift('NOTE', t); document.getElementById('shiftNotesInput').value=""; }
+
+        function checkLogin() {
+            const u = document.getElementById('username').value.toLowerCase().trim();
+            const p = document.getElementById('password').value.trim();
+            if (validUsers[u] === p) {
+                localStorage.setItem("frostLoggedIn", "true"); localStorage.setItem("frostUserName", u);
+                showDash(u);
+            } else { document.getElementById('errorMsg').style.display = "block"; }
+        }
+
+        function showDash(u) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('appContent').style.display = 'flex';
+            document.getElementById('welcomeUser').innerText = "Driver: " + u;
+            const f = (id, l) => { const e = document.getElementById(id); e.innerHTML = '<option value="">--Select--</option>'; l.forEach(v => e.innerHTML += `<option value="${v}">${v}</option>`); };
+            f('regNo', fleetVehicles); f('fuelRegNo', fleetVehicles); f('trailerNo', fleetTrailers);
+            if (localStorage.getItem("shiftStartTime")) startTimer(); else updateButtons();
+        }
+
+        function startTimer() {
+            document.getElementById('shiftReminder').style.display = "block"; updateButtons();
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const diff = new Date().getTime() - localStorage.getItem("shiftStartTime");
+                const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
+                document.getElementById('shiftDuration').innerText = `${h}h ${m}m`;
+            }, 1000);
+        }
+
+        function stopTimer() { clearInterval(timerInterval); document.getElementById('shiftReminder').style.display = "none"; updateButtons(); }
+        
+        function updateButtons() {
+            const active = !!localStorage.getItem("shiftStartTime");
+            document.getElementById('startBtn').disabled = active;
+            document.getElementById('endBtn').disabled = !active;
+            document.getElementById('nightBtn').disabled = !active;
         }
 
         function logout() { localStorage.clear(); location.reload(); }
         function openNav() { document.getElementById("sideMenu").style.width = "270px"; }
         function closeNav() { document.getElementById("sideMenu").style.width = "0"; }
-        window.onload = function() { if (localStorage.getItem("frostLoggedIn") === "true") showDashboard(localStorage.getItem("frostUserName")); };
+        window.onload = () => { if(localStorage.getItem("frostLoggedIn")) showDash(localStorage.getItem("frostUserName")); };
     </script>
 </body>
 </html>
