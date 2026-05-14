@@ -151,6 +151,17 @@
                 <div id="fuelForm" style="display:none; margin-top:15px; border-top: 1px solid #333; padding-top:10px;">
                     <span class="form-label">Vehicle</span>
                     <select id="fuelRegNo" class="notes-input"></select>
+                    
+                    <span class="form-label">Fuel Card Used</span>
+                    <select id="fuelCardUsed" class="notes-input">
+                        <option value="">--Select Card--</option>
+                        <option value="the fuel card co">the fuel card co</option>
+                        <option value="FuelWise">FuelWise</option>
+                        <option value="Silvey">Silvey</option>
+                        <option value="TruckOne">TruckOne</option>
+                        <option value="Certas">Certas</option>
+                    </select>
+
                     <span class="form-label">Total Litres</span>
                     <input type="number" step="0.01" id="fuelLitres" class="notes-input" placeholder="0.00">
                     <span class="form-label">Total Price (£)</span>
@@ -321,13 +332,17 @@
 
         async function submitFuel() {
             const reg = document.getElementById('fuelRegNo').value;
+            const card = document.getElementById('fuelCardUsed').value;
             const lit = document.getElementById('fuelLitres').value;
             const prc = document.getElementById('fuelPrice').value;
-            if(!reg || !lit || !prc) return alert("Fill all fields.");
+            
+            if(!reg || !card || !lit || !prc) return alert("Fill all fields.");
+            
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 try {
                     await _supabase.from('fuel_logs').insert([{ 
                         driver_name: localStorage.getItem("frostUserName"), vehicle_reg: reg, 
+                        fuel_card: card,
                         litres: parseFloat(lit), price: parseFloat(prc),
                         coordinates: pos.coords.latitude + "," + pos.coords.longitude
                     }]);
