@@ -7,76 +7,160 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { 
-            --fts-red: #E62411; --fts-dark: #1a1d1e; --bg-color: #121212; 
-            --card-bg: #1e1e1e; --text-main: #e0e0e0; --text-dim: #b0b0b0;
-            --border-color: #333333; --night-blue: #34495e; --warning-yellow: #f1c40f; 
+            --app-bg: #f2f2f7; 
+            --card-bg: #ffffff;
+            --text-primary: #1c1c1e;
+            --text-secondary: #8e8e93;
+            --accent-blue: #007aff;
+            --accent-red: #ff3b30;
+            --accent-green: #34c759;
+            --accent-orange: #ff9500;
+            --accent-purple: #af52de;
+            --border-color: #e5e5ea;
+            --header-bg: rgba(255, 255, 255, 0.85);
         }
 
-        .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 35px; background-color: #000; border-bottom: 2px solid var(--fts-red); z-index: 10001; }
-        .ticker { display: inline-block; white-space: nowrap; height: 35px; line-height: 35px; animation: ticker-move 25s linear infinite; }
-        .ticker__item { display: inline-block; padding: 0 40px; font-size: 13px; color: white; font-weight: bold; text-transform: uppercase; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--app-bg); color: var(--text-primary); display: flex; flex-direction: column; align-items: center; padding-top: 90px; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
+        
+        /* Ticker - Ultra Compact */
+        .ticker-wrap { position: fixed; top: 0; width: 100%; overflow: hidden; height: 26px; background-color: #1c1c1e; border-bottom: 2px solid var(--accent-blue); z-index: 10001; }
+        .ticker { display: inline-block; white-space: nowrap; height: 26px; line-height: 26px; animation: ticker-move 30s linear infinite; }
+        .ticker__item { display: inline-block; padding: 0 40px; font-size: 11px; color: #fff; font-weight: 700; letter-spacing: 0.5px; }
         @keyframes ticker-move { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         
-        body { margin: 0; padding: 0; font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding-top: 110px; padding-bottom: 100px; }
-        header { width: 100%; padding: 15px; display: flex; align-items: center; position: fixed; top: 35px; background: var(--card-bg); z-index: 100; border-bottom: 1px solid var(--border-color); }
-        #menuBtn { font-size: 26px; color: var(--fts-red); cursor: pointer; padding: 4px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); }
+        /* Glassmorphism Header */
+        header { width: 100%; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 28px; background: var(--header-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 100; border-bottom: 1px solid var(--border-color); box-sizing: border-box; }
+        #menuBtn { font-size: 22px; color: var(--accent-blue); cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: 0.2s; background: transparent; border: none; font-weight: 600; }
+        #menuBtn:active { opacity: 0.5; }
+        .header-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-right: 10px;}
         
-        #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: var(--fts-red); overflow-x: hidden; transition: 0.3s; padding-top: 80px; }
-        #sideMenu a { padding: 12px 20px; text-decoration: none; font-size: 15px; color: white !important; display: block; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+        /* Sleek Side Menu */
+        #sideMenu { height: 100%; width: 0; position: fixed; z-index: 9999; top: 0; left: 0; background-color: rgba(28, 28, 30, 0.98); backdrop-filter: blur(10px); overflow-x: hidden; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding-top: 60px; box-shadow: 5px 0 25px rgba(0,0,0,0.2); }
+        #sideMenu a { padding: 18px 24px; text-decoration: none; font-size: 16px; color: #fff !important; display: block; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
+        #sideMenu a:active { background: rgba(255,255,255,0.1); }
 
-        #summaryModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20000; overflow-y: auto; padding: 20px 10px; box-sizing: border-box; }
-        .modal-content { background: var(--card-bg); border-radius: 12px; width: 100%; max-width: 400px; margin: 0 auto; padding: 20px; border: 1px solid var(--border-color); }
-        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; font-size: 13px; }
+        /* Summary Modal */
+        #summaryModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 20000; overflow-y: auto; padding: 20px 15px; box-sizing: border-box; }
+        .modal-content { background: var(--app-bg); border-radius: 20px; width: 100%; max-width: 380px; margin: 40px auto; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .summary-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 14px; font-weight: 500; color: var(--text-primary); }
 
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-box { width: 85%; max-width: 320px; text-align: center; }
-        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid var(--border-color); border-radius: 10px; background: #222; color: white; box-sizing: border-box; font-size: 16px; }
+        /* Broadcast Modal */
+        #broadcastModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index:30000; flex-direction:column; align-items:center; justify-content:center; padding: 20px; box-sizing: border-box; }
+
+        /* Login Overlay */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--app-bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { width: 85%; max-width: 320px; background: var(--card-bg); padding: 30px 24px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
+        .login-box h3 { margin-top: 0; color: var(--text-primary); font-weight: 700; font-size: 22px; margin-bottom: 24px;}
+        .login-box input { width: 100%; padding: 14px 16px; margin: 6px 0 12px 0; border: 1px solid var(--border-color); border-radius: 12px; background: var(--app-bg); color: var(--text-primary); box-sizing: border-box; font-size: 16px; transition: 0.2s; }
+        .login-box input:focus { outline: none; border-color: var(--accent-blue); background: #fff; }
         
         #appContent { display: none; width: 100%; flex-direction: column; align-items: center; }
-        .logo { max-width: 160px; margin: 10px 0 20px 0; }
-        .container { width: 90%; max-width: 420px; }
+        .logo { max-width: 120px; margin: 10px 0; border-radius: 12px; }
+        .container { width: 94%; max-width: 500px; }
         
-        .check-card { background: var(--card-bg); border: 1px solid var(--border-color); border-top: 4px solid var(--fts-red); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        .status-badge { font-size: 10px; font-weight: 800; color: #fff; background: #333; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
-        .card-title { margin: 0; color: #fff; font-size: 18px; font-weight: 700; }
+        /* Compact Edge-to-Edge Cards */
+        .check-card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .card-header { display: flex; align-items: center; margin-bottom: 14px; }
+        .card-icon { font-size: 18px; margin-right: 8px; }
+        .card-title { margin: 0; color: var(--text-primary); font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
         
-        .btn { background: var(--fts-dark); color: white; text-align: center; padding: 16px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; border: 1px solid #444; margin-top: 10px; box-sizing: border-box; }
-        .btn-red { background: var(--fts-red); border: none; }
-        .btn-blue { background: var(--night-blue); border: none; }
-        .btn:disabled { opacity: 0.5; }
+        /* Native App Style Buttons */
+        .btn { background: var(--accent-blue); color: white; text-align: center; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; width: 100%; border: none; font-size: 15px; transition: 0.15s; box-sizing: border-box; }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-red { background: var(--accent-red); }
+        .btn-green { background: var(--accent-green); }
+        .btn-orange { background: var(--accent-orange); color: #fff; }
+        .btn-dark { background: #2c2c2e; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
         
-        .notes-input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin: 8px 0; background: #222; color: #fff; box-sizing: border-box; font-size: 14px; }
-        .defect-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
-        .toggle-btn { padding: 6px 12px; font-size: 10px; font-weight: bold; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444; }
-        .toggle-btn.active-ok { background: #27ae60; border-color: #27ae60; }
-        .toggle-btn.active-fail { background: var(--fts-red); border-color: var(--fts-red); }
+        /* Accordion Style Triggers */
+        .accordion-btn { background: var(--app-bg); color: var(--text-primary); font-weight: 600; text-align: left; padding: 14px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        
+        /* Inputs */
+        .notes-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 10px; margin: 4px 0 12px 0; background: var(--app-bg); color: var(--text-primary); box-sizing: border-box; font-size: 16px; appearance: none; }
+        .notes-input:focus { outline: none; border-color: var(--accent-blue); background: #fff; }
+        select.notes-input { background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%238e8e93%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 14px top 50%; background-size: 10px auto; padding-right: 30px; }
+        
+        .defect-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--app-bg); font-size: 14px; font-weight: 500; color: var(--text-primary); }
+        .defect-item:last-child { border-bottom: none; }
+        .defect-item div { display: inline-flex; background: var(--app-bg); border-radius: 8px; padding: 2px; }
+        .toggle-btn { padding: 6px 14px; font-size: 11px; font-weight: 700; border-radius: 6px; background: transparent; color: var(--text-secondary); border: none; transition: 0.2s; }
+        .toggle-btn.active-ok { background: #fff; color: var(--accent-green); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .toggle-btn.active-fail { background: #fff; color: var(--accent-red); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-        #shiftReminder { position: fixed; bottom: 0; width: 100%; background: var(--warning-yellow); color: #000; text-align: center; padding: 15px; font-weight: 800; z-index: 10002; display: none; }
-        .form-label { font-size: 11px; font-weight: bold; color: var(--text-dim); text-transform: uppercase; margin-top: 10px; display: block; }
+        #shiftReminder { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(10px); color: #fff; text-align: center; padding: 12px 24px; font-weight: 600; z-index: 10002; display: none; border-radius: 30px; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
+        #shiftReminder span { color: var(--accent-blue); font-weight: 700; margin-left: 4px; }
+        .form-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 8px; display: block; letter-spacing: 0.5px; }
+
+        /* ---------------------------------------------------- */
+        /* FULL-SCREEN JOB OVERLAY STYLING                      */
+        /* ---------------------------------------------------- */
+        
+        #activeDispatchBtn { background: var(--accent-blue); display: none; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3); font-size: 16px; padding: 16px; }
+        
+        #jobOverlay { position: fixed; top: 100%; left: 0; width: 100%; height: 100%; background: var(--app-bg); z-index: 25000; transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
+        #jobOverlay.active { top: 0; }
+        
+        .job-overlay-header { background: var(--card-bg); padding: 50px 20px 20px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+        .job-overlay-title { font-size: 22px; font-weight: 800; margin: 0; color: var(--text-primary); }
+        .job-overlay-close { color: var(--accent-blue); font-weight: 600; font-size: 16px; cursor: pointer; padding: 8px; background: rgba(0, 122, 255, 0.1); border-radius: 8px; }
+        .job-overlay-content { flex: 1; overflow-y: auto; padding: 20px; }
+
+        .job-ticket { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .job-status-pill { display: inline-block; font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #fff; margin-bottom: 12px; }
+        
+        @keyframes pulse-btn {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 149, 0, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 149, 0, 0); }
+        }
+        .btn-urgent { background: var(--accent-orange); color: #fff; animation: pulse-btn 1.5s infinite; font-size: 16px; padding: 18px; margin-top: 10px; }
+
     </style>
 </head>
 <body>
 
+    <input type="file" id="globalCameraInput" accept="image/*" capture="environment" style="position: absolute; left: -9999px; width: 1px; height: 1px;">
+
+    <div id="jobOverlay">
+        <div class="job-overlay-header">
+            <h2 class="job-overlay-title">Live Dispatch</h2>
+            <div class="job-overlay-close" onclick="closeJobOverlay()">Minimize ⬇</div>
+        </div>
+        <div class="job-overlay-content">
+            <button class="btn btn-dark" style="margin-bottom: 20px; padding: 12px; background: #e5e5ea; color: #1c1c1e;" onclick="fetchActiveJobs(true)">↻ Refresh Connection</button>
+            <div id="jobOverlayList"></div>
+        </div>
+    </div>
+
     <div id="loginOverlay">
-        <img src="logo.png" class="logo">
         <div class="login-box">
-            <h3 style="color: var(--fts-red);">Fleet Portal Access</h3>
+            <img src="logo.png" class="logo" alt="FTS" onerror="this.style.display='none'">
+            <h3>Fleet Portal</h3>
             <input type="text" id="username" placeholder="Full Name">
             <input type="password" id="password" placeholder="Password">
-            <button class="btn btn-red" onclick="checkLogin()">Login</button>
-            <p id="errorMsg" style="color: var(--fts-red); display:none; margin-top:10px;">Invalid Credentials.</p>
+            <button class="btn" onclick="checkLogin()" style="margin-top: 10px;">Sign In</button>
+            <p id="errorMsg" style="color: var(--accent-red); display:none; margin-top:15px; font-size: 13px; font-weight: 600;">Incorrect Credentials.</p>
         </div>
     </div>
 
     <div id="summaryModal">
         <div class="modal-content">
-            <h2 style="margin-top:0; color:var(--fts-red);">Week to Date</h2>
+            <h2 style="margin-top:0; margin-bottom: 20px; color:var(--text-primary); font-size: 20px; text-align: center;">Week to Date</h2>
             <div id="summaryData">Loading logs...</div>
-            <button class="btn" onclick="closeSummary()" style="margin-top:20px;">Close Summary</button>
+            <button class="btn btn-dark" onclick="closeSummary()" style="margin-top:24px;">Close</button>
         </div>
     </div>
 
-    <div id="shiftReminder">⚠️ SHIFT ACTIVE: <span id="shiftDuration">00h 00m</span></div>
+    <div id="broadcastModal">
+        <div class="modal-content" style="text-align:center; border-top: 4px solid var(--accent-orange); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+            <h2 style="margin-top:0; color:var(--accent-orange); font-size: 22px;">⚠️ FLEET ALERT ⚠️</h2>
+            <p id="broadcastText" style="font-size: 16px; margin: 20px 0; line-height: 1.5; font-weight: 600;"></p>
+            <button class="btn btn-orange" onclick="closeBroadcast()">ACKNOWLEDGE MESSAGE</button>
+        </div>
+    </div>
+
+    <div id="shiftReminder">⏱️ SHIFT ACTIVE <span id="shiftDuration">00h 00m</span></div>
 
     <div id="appContent">
         <div class="ticker-wrap"><div class="ticker">
@@ -85,70 +169,112 @@
             <div class="ticker__item">OFFICE: 01949 480130</div>
         </div></div>
 
-        <header><div id="menuBtn" onclick="openNav()">☰</div></header>
+        <header>
+            <div class="header-title">Frost Fleet</div>
+            <button id="menuBtn" onclick="openNav()">☰</button>
+        </header>
 
         <div id="sideMenu">
-            <a onclick="openSummary()">📅 Week to Date Summary</a>
-            <a onclick="logout()">Log Out</a>
-            <div onclick="closeNav()" style="padding:20px; color:white;">✕ Close</div>
+            <div style="padding: 0 24px 20px 24px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Menu</div>
+            <a onclick="openSummary()">📊 Week to Date</a>
+            <a onclick="logout()">🚪 Log Out</a>
+            <div onclick="closeNav()" style="padding:24px; color:var(--text-secondary); font-size: 14px; text-align: center; margin-top: 20px;">Close Menu</div>
         </div>
 
-        <img src="logo.png" class="logo">
-        <div id="welcomeUser" style="color:var(--text-dim); margin-bottom:20px; font-weight:500;"></div>
+        <div id="welcomeUser" style="color:var(--text-secondary); margin-top: 15px; margin-bottom:20px; font-weight:600; font-size: 14px; text-align: center;"></div>
 
         <div class="container">
+            
+            <button id="activeDispatchBtn" onclick="openJobOverlay()">🚚 VIEW ACTIVE DISPATCH</button>
+
             <div class="check-card">
-                <div class="status-badge">TIMECLOCK</div>
-                <h2 class="card-title">Shift Tracking</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
-                    <button id="startBtn" class="btn btn-red" onclick="logShift('START')">START SHIFT</button>
-                    <button id="endBtn" class="btn" onclick="logShift('END')">END SHIFT</button>
-                    <button id="nightBtn" class="btn btn-blue" style="grid-column: span 2;" onclick="logShift('NIGHT OUT')">🌙 RECORD NIGHT OUT</button>
+                <div class="card-header">
+                    <span class="card-icon">⏱️</span>
+                    <h2 class="card-title">Timeclock</h2>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button id="startBtn" class="btn btn-green" onclick="logShift('START')">Start Shift</button>
+                    <button id="endBtn" class="btn btn-red" onclick="logShift('END')">End Shift</button>
+                    <button id="nightBtn" class="btn btn-dark" style="grid-column: span 2;" onclick="logShift('NIGHT OUT')">🌙 Record Night Out</button>
                 </div>
             </div>
 
             <div class="check-card">
-                <div class="status-badge">NOTES</div>
-                <h2 class="card-title">Other Work / Notes</h2>
-                <input type="text" id="shiftNotesInput" class="notes-input" placeholder="Record extra work here...">
-                <button class="btn" onclick="submitNote()" style="padding:10px; font-size:13px;">SUBMIT NOTE</button>
+                <div class="card-header">
+                    <span class="card-icon">📝</span>
+                    <h2 class="card-title">Other Work / Notes</h2>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="shiftNotesInput" class="notes-input" style="margin:0;" placeholder="Record extra work...">
+                    <button class="btn" onclick="submitNote()" style="width: 80px; padding: 0;">Add</button>
+                </div>
             </div>
 
             <div class="check-card">
-                <div class="status-badge">DVSA COMPLIANCE</div>
-                <h2 class="card-title">Daily Vehicle Check</h2>
-                <button class="btn btn-red" onclick="toggleForm('vehicleCheckForm')">START VEHICLE CHECK</button>
-                <div id="vehicleCheckForm" style="display:none; margin-top:15px; border-top: 1px solid #333; padding-top:10px;">
+                <div class="card-header">
+                    <span class="card-icon">🚛</span>
+                    <h2 class="card-title">DVSA Compliance</h2>
+                </div>
+                <button class="btn accordion-btn" onclick="toggleForm('vehicleCheckForm')">
+                    <span>Daily Vehicle Check</span>
+                    <span style="color: var(--text-secondary);">+</span>
+                </button>
+                
+                <div id="vehicleCheckForm" style="display:none; margin-top:10px; padding-top:10px; border-top: 1px solid var(--app-bg);">
                     <span class="form-label">Vehicle Registration</span>
                     <select id="regNo" class="notes-input"></select>
                     <span class="form-label">Odometer Reading</span>
                     <input type="number" id="mileage" class="notes-input" placeholder="Current Miles">
-                    <div id="vehicleDefectList"></div>
-                    <span class="form-label">Fail Details / Notes</span>
+                    
+                    <div id="vehicleDefectList" style="margin: 15px 0;"></div>
+                    
+                    <span class="form-label">Fail Details / Notes (Required for fails)</span>
                     <textarea id="checkNotes" class="notes-input" placeholder="Explain any fails..." rows="2"></textarea>
-                    <button id="saveCheckBtn" class="btn btn-red" onclick="submitVehicleCheck()">SUBMIT COMPLIANCE</button>
+                    
+                    <label for="globalCameraInput" id="vPhotoBtn" class="btn btn-orange" style="display:none; margin-top: 10px; text-align:center; cursor:pointer;" onclick="setCameraTarget('v')">📸 Upload Defect Photo</label>
+                    <div id="vPhotoStatus" style="font-size: 13px; font-weight: 600; color: var(--accent-green); margin-top: 8px; text-align: center;"></div>
+                    
+                    <button id="saveCheckBtn" class="btn btn-dark" onclick="submitVehicleCheck()" style="margin-top: 15px;">Submit Compliance</button>
                 </div>
             </div>
 
             <div class="check-card">
-                <div class="status-badge">FLEET OPS</div>
-                <h2 class="card-title">Trailer Check</h2>
-                <button class="btn" onclick="toggleForm('trailerCheckForm')">START TRAILER CHECK</button>
-                <div id="trailerCheckForm" style="display:none; margin-top:15px; border-top: 1px solid #333; padding-top:10px;">
+                <div class="card-header">
+                    <span class="card-icon">🔗</span>
+                    <h2 class="card-title">Fleet Operations</h2>
+                </div>
+                <button class="btn accordion-btn" onclick="toggleForm('trailerCheckForm')">
+                    <span>Daily Trailer Check</span>
+                    <span style="color: var(--text-secondary);">+</span>
+                </button>
+                
+                <div id="trailerCheckForm" style="display:none; margin-top:10px; padding-top:10px; border-top: 1px solid var(--app-bg);">
                     <span class="form-label">Trailer ID</span>
                     <select id="trailerNo" class="notes-input"></select>
-                    <div id="trailerDefectList"></div>
-                    <span class="form-label">Maintenance Notes</span>
-                    <textarea id="trailerNotes" class="notes-input" placeholder="Notes for the 'notes' column..."></textarea>
-                    <button id="saveTrailerBtn" class="btn btn-red" onclick="submitTrailerCheck()">SUBMIT TRAILER DATA</button>
+                    
+                    <div id="trailerDefectList" style="margin: 15px 0;"></div>
+                    
+                    <span class="form-label">Fail Details / Notes (Required for fails)</span>
+                    <textarea id="trailerNotes" class="notes-input" placeholder="Explain any fails..." rows="2"></textarea>
+
+                    <label for="globalCameraInput" id="tPhotoBtn" class="btn btn-orange" style="display:none; margin-top: 10px; text-align:center; cursor:pointer;" onclick="setCameraTarget('t')">📸 Upload Defect Photo</label>
+                    <div id="tPhotoStatus" style="font-size: 13px; font-weight: 600; color: var(--accent-green); margin-top: 8px; text-align: center;"></div>
+
+                    <button id="saveTrailerBtn" class="btn btn-dark" onclick="submitTrailerCheck()" style="margin-top: 15px;">Submit Trailer Data</button>
                 </div>
             </div>
 
-            <div class="check-card" style="border-top-color: #34495e;">
-                <div class="status-badge">COST CONTROL</div>
-                <h2 class="card-title">Fuel Log</h2>
-                <button class="btn btn-blue" onclick="toggleForm('fuelForm')">LOG FUEL ENTRY</button>
-                <div id="fuelForm" style="display:none; margin-top:15px; border-top: 1px solid #333; padding-top:10px;">
+            <div class="check-card">
+                <div class="card-header">
+                    <span class="card-icon">⛽</span>
+                    <h2 class="card-title">Cost Control</h2>
+                </div>
+                <button class="btn accordion-btn" onclick="toggleForm('fuelForm')">
+                    <span>Log Fuel Entry</span>
+                    <span style="color: var(--text-secondary);">+</span>
+                </button>
+
+                <div id="fuelForm" style="display:none; margin-top:10px; padding-top:10px; border-top: 1px solid var(--app-bg);">
                     <span class="form-label">Vehicle</span>
                     <select id="fuelRegNo" class="notes-input"></select>
                     
@@ -162,16 +288,64 @@
                         <option value="Certas">Certas</option>
                     </select>
 
-                    <span class="form-label">Total Litres</span>
-                    <input type="number" step="0.01" id="fuelLitres" class="notes-input" placeholder="0.00">
-                    <span class="form-label">Total Price (£)</span>
-                    <input type="number" step="0.01" id="fuelPrice" class="notes-input" placeholder="0.00">
-                    <button id="saveFuelBtn" class="btn btn-blue" onclick="submitFuel()">SAVE FUEL LOG</button>
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <span class="form-label">Litres</span>
+                            <input type="number" step="0.01" id="fuelLitres" class="notes-input" placeholder="0.00">
+                        </div>
+                        <div style="flex: 1;">
+                            <span class="form-label">Price (£)</span>
+                            <input type="number" step="0.01" id="fuelPrice" class="notes-input" placeholder="0.00">
+                        </div>
+                    </div>
+                    <button id="saveFuelBtn" class="btn btn-orange" style="margin-top: 8px;" onclick="submitFuel()">Save Fuel Log</button>
                 </div>
             </div>
+
+            <div class="check-card">
+                <div class="card-header">
+                    <span class="card-icon">🏖️</span>
+                    <h2 class="card-title">Annual Leave</h2>
+                </div>
+                
+                <button class="btn accordion-btn" onclick="toggleHoliday()" style="margin-bottom: 8px;">
+                    <span>View Entitlement</span>
+                    <span style="color: var(--text-secondary);">+</span>
+                </button>
+
+                <div id="holidayForm" style="display:none; margin-top:0px; margin-bottom: 15px; padding-top:10px; border-top: 1px solid var(--app-bg);">
+                    <div id="holidayDataContent" style="text-align: center; padding: 5px 0; color: var(--text-secondary); font-size: 14px;">Loading...</div>
+                </div>
+
+                <button class="btn accordion-btn" onclick="toggleHolidayRequestForm()">
+                    <span>Request Holiday</span>
+                    <span style="color: var(--text-secondary);">+</span>
+                </button>
+
+                <div id="holidayRequestForm" style="display:none; margin-top:10px; padding-top:10px; border-top: 1px solid var(--app-bg);">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <span class="form-label">Start Date</span>
+                            <input type="date" id="holStartDate" class="notes-input">
+                        </div>
+                        <div style="flex: 1;">
+                            <span class="form-label">End Date</span>
+                            <input type="date" id="holEndDate" class="notes-input">
+                        </div>
+                    </div>
+                    <span class="form-label">Days Requested</span>
+                    <input type="number" id="holDays" class="notes-input" placeholder="e.g. 5">
+                    <button id="saveHolBtn" class="btn btn-dark" onclick="submitHolidayRequest()" style="margin-top: 8px;">Submit Request</button>
+
+                    <div id="holidayStatusBox" style="margin-top: 15px; display: none; flex-direction: column; gap: 10px;">
+                    </div>
+                </div>
+            </div>
+            
         </div>
     </div>
 
+    <script src="capacitor.js"></script>
     <script>
         const SUPABASE_URL = "https://mbudwnwxucluwgbkgbfx.supabase.co"; 
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idWR3bnd4dWNsdXdnYmtnYmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDQwMjYsImV4cCI6MjA5MDc4MDAyNn0.xFv-FiQ894vdfJuQYWQyF4WzQXmlnmnKvz_c8nuzl5Q"; 
@@ -182,216 +356,521 @@
         const vehicleItems = ["Lights & Indicators","Tyre Condition","Wheel Nuts","Mirrors & Glass","Bodywork","Wipers/Washers","Oil/Coolant Levels","AdBlue Level","Air Lines/Suzies","5th Wheel/Clip"];
         const trailerItems = ["Tyres","Wheel nuts","Brake connections","Air lines","Lights","Body/Curtains","Landing legs","ABS/EBS Light"];
 
-        const validUsers = {"agency one": "agent1", "agency two": "agent2", "agency three": "agent3", "agency four": "agent4", "andy carter": "ac26", "ricardo morais": "rm26", "dean young": "dy26", "andy west": "aw26", "callum lee": "ca26", "andy elston": "ae26", "josh harrison": "jh26", "lee woodcock": "lw26", "marc wickham": "mw26", "neil wood": "nw26", "richard spence": "rs26", "roy taylor": "rt26", "sean walton": "sw26", "marco marco": "mm26", "richard robinson": "rr26", "jon hulbert": "jh26", "chris frost": "cf26" };
+        const validUsers = {
+            "agency one": "agent1", "agency two": "agent2", "agency three": "agent3", "agency four": "agent4",
+            "andy carter": "ac26", "andy elston": "ae26", "andy west": "aw26", "barrie ashmore": "ba26", 
+            "callum lee": "ca26", "chris frost": "cf26", "dean young": "dy26", "frost": "Haulage2026", 
+            "ian bason": "ib26", "johannes van neerven": "jvn26", "jon hulbert": "jh26", "josh harrison": "jh26", 
+            "lee woodcock": "lw26", "marc wickham": "mw26", "marco marco": "mm26", "neil wood": "nw26", "neil woods": "nw26", 
+            "rhys hill": "rh26", "ricardo morais": "rm26", "richard": "Frost2026", "richard robinson": "rr26", 
+            "richard spence": "rs26", "roy taylor": "rt26", "sean walton": "sw26", "stuart sleigh": "ss26", 
+            "svagunas butnorius": "sb26", "thomas broomhead": "tb26" 
+        };
 
         let timerInterval;
+        let holidayChannel = null;
+        let trackingWatcherId = null;
+        let lastPingTime = 0;
+        let lastJobAlertCount = 0; 
+        let broadcastAlarmTimeout = null;
+        let backgroundJobTimer = null;
+        
+        let vDefectPhotoUrl = null;
+        let tDefectPhotoUrl = null;
+
+        function openJobOverlay() { document.getElementById('jobOverlay').classList.add('active'); }
+        function closeJobOverlay() { document.getElementById('jobOverlay').classList.remove('active'); }
+
+        async function setupFirebasePush() {
+            const cap = window.Capacitor || window.capacitor;
+            if (!cap || !cap.Plugins.PushNotifications) return;
+
+            const PushNotifications = cap.Plugins.PushNotifications;
+            try {
+                let permStatus = await PushNotifications.checkPermissions();
+                if (permStatus.receive !== 'granted') permStatus = await PushNotifications.requestPermissions();
+                if (permStatus.receive === 'granted') await PushNotifications.register();
+
+                PushNotifications.addListener('registration', async (token) => {
+                    const currentToken = localStorage.getItem("fcm_cached_token");
+                    if (currentToken !== token.value) {
+                        await _supabase.from('fleet_logs').insert([{ driver_name: localStorage.getItem("frostUserName"), action_type: 'FCM_TOKEN', coordinates: token.value }]);
+                        localStorage.setItem("fcm_cached_token", token.value);
+                    }
+                });
+
+                PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                    startAlarm(); fetchActiveJobs(false); setTimeout(() => stopAlarm(), 10000);
+                });
+
+                PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+                    stopAlarm(); fetchActiveJobs(true); openJobOverlay();
+                });
+            } catch (e) { console.log("Firebase Init Error:", e); }
+        }
+
+        async function setupNotificationChannel() {
+            const cap = window.Capacitor || window.capacitor;
+            if (cap && cap.Plugins.LocalNotifications) {
+                try { await cap.Plugins.LocalNotifications.createChannel({ id: 'fleet_urgent', name: 'Urgent Dispatch', importance: 5, visibility: 1, vibration: true }); } catch(e) {}
+            }
+        }
+
+        async function fireNativeNotification(title, body) {
+            const cap = window.Capacitor || window.capacitor;
+            if (cap && cap.Plugins.LocalNotifications) {
+                try { await cap.Plugins.LocalNotifications.schedule({ notifications: [{ title: title, body: body, id: Math.floor(Math.random() * 100000), channelId: 'fleet_urgent', schedule: { at: new Date(Date.now() + 1000) } }] }); } catch(e) {}
+            }
+        }
+
+        let audioCtx = null; let alarmActive = false; let alarmTimer = null;
+        function initAudio() {
+            if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
+        }
+        function startAlarm() {
+            if (alarmActive) return; alarmActive = true; initAudio();
+            alarmTimer = setInterval(() => {
+                if (audioCtx) {
+                    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                    osc.type = 'square'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+                    osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.2); 
+                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+                }
+                const cap = window.Capacitor || window.capacitor;
+                if (cap && cap.Plugins.Haptics) cap.Plugins.Haptics.vibrate(); else if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            }, 1500); 
+        }
+        function stopAlarm() { if (!alarmActive) return; alarmActive = false; clearInterval(alarmTimer); alarmTimer = null; }
+
+        async function startBackgroundTracking() {
+            try {
+                const cap = window.Capacitor || window.capacitor; const BG = cap.Plugins.BackgroundGeolocation;
+                if (!BG) return;
+                lastPingTime = 0; 
+                trackingWatcherId = await BG.addWatcher({ backgroundMessage: "Frost Fleet is tracking your shift.", backgroundTitle: "Tracking Active", requestPermissions: true, stale: false, distanceFilter: 0 },
+                    async (location, error) => {
+                        if (error) return; const now = Date.now();
+                        if (now - lastPingTime >= 300000 && location.accuracy <= 100) {
+                            lastPingTime = now; const speedMph = location.speed ? Math.round(location.speed * 2.237) : 0;
+                            const user = localStorage.getItem("frostUserName");
+                            await _supabase.from('vehicle_tracking').insert([{ driver_name: user, coordinates: `${location.latitude},${location.longitude}`, speed: speedMph, heading: Math.round(location.bearing || 0) }]);
+                        }
+                    }
+                );
+            } catch (e) {}
+        }
+        async function stopBackgroundTracking() { const cap = window.Capacitor || window.capacitor; if (trackingWatcherId && cap) { await cap.Plugins.BackgroundGeolocation.removeWatcher({ id: trackingWatcherId }); trackingWatcherId = null; } }
+
+        async function fetchActiveJobs(manualSync = false) {
+            const user = localStorage.getItem("frostUserName"); if (!user) return;
+            try {
+                const { data: activeJobs, error } = await _supabase.from('quotes').select('*').eq('assigned_driver', user).in('dispatch_status', ['sent', 'acknowledged', 'arrived', 'loaded', 'del_arrived', 'tipped']).order('created_at', { ascending: false });
+                if (error) throw error;
+
+                const btn = document.getElementById('activeDispatchBtn');
+                
+                if (!activeJobs || activeJobs.length === 0) {
+                    if (manualSync) alert("You are up to date! No pending tasks.");
+                    btn.style.display = 'none'; closeJobOverlay(); document.getElementById('jobOverlayList').innerHTML = ''; stopAlarm(); lastJobAlertCount = 0; return;
+                }
+
+                btn.style.display = 'block';
+                renderActiveJobs(activeJobs);
+
+                const unacknowledgedJobs = activeJobs.filter(j => j.dispatch_status === 'sent');
+                if (unacknowledgedJobs.length > 0) {
+                    startAlarm(); 
+                    if (unacknowledgedJobs.length > lastJobAlertCount) {
+                        fireNativeNotification("🚚 NEW LOAD DISPATCHED", "Tap to open Frost Fleet and acknowledge your new job.");
+                        openJobOverlay(); 
+                    }
+                } else { stopAlarm(); }
+                lastJobAlertCount = unacknowledgedJobs.length;
+            } catch(e) { console.error("Job Fetch Error:", e); if(manualSync) alert("Network error while syncing."); }
+        }
+
+        function renderActiveJobs(jobs) {
+            const list = document.getElementById('jobOverlayList');
+            list.innerHTML = '';
+
+            const user = localStorage.getItem("frostUserName");
+            const names = getFormattedNames(user);
+
+            jobs.forEach(job => {
+                const dStatus = job.dispatch_status || 'sent'; 
+                let btnHtml = ''; 
+                let badgeBg = 'var(--accent-green)'; 
+                let badgeText = 'NEW JOB'; 
+                
+                const fullCollAddress = `${job.coll_company || ''}<br>${job.coll_address || ''}<br>${job.coll_postcode || ''}`.replace(/<br><br>/g, '<br>');
+                const fullDelAddress = `${job.del_company || ''}<br>${job.del_address || ''}<br>${job.del_postcode || ''}`.replace(/<br><br>/g, '<br>');
+                const collTime = job.coll_datetime ? job.coll_datetime.replace('T', ' ') : 'ASAP';
+
+                let contentHtml = '';
+
+                if (dStatus === 'sent') {
+                    badgeText = 'AWAITING RESPONSE'; badgeBg = 'var(--accent-orange)';
+                    contentHtml = `
+                        <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 15px;">
+                            Hello ${names.first}, you have a new job.
+                        </div>
+                        <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; background: var(--app-bg); padding: 12px; border-radius: 8px;">
+                            <b style="color: var(--accent-orange);">📍 PLEASE COLLECT FROM:</b><br>
+                            ${fullCollAddress}<br><br>
+                            <b>Date & Time:</b> ${collTime}
+                        </div>
+                    `;
+                    btnHtml = `<button class="btn btn-urgent" onclick="acknowledgeJob('${job.id}')">⚠️ Acknowledge Job</button>`; 
+
+                } else if (dStatus === 'acknowledged') {
+                    badgeText = 'ON ROUTE TO COLLECTION'; badgeBg = 'var(--accent-blue)';
+                    contentHtml = `
+                        <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; background: var(--app-bg); padding: 12px; border-radius: 8px;">
+                            <b style="color: var(--accent-blue);">📍 COLLECTION ADDRESS:</b><br>
+                            ${fullCollAddress}<br><br>
+                            <b>Date & Time:</b> ${collTime}
+                        </div>
+                    `;
+                    btnHtml = `<button class="btn" style="background:var(--accent-blue); margin-top:10px;" onclick="markArrived('${job.id}')">📍 Arrived at Collection</button>`;
+
+                } else if (dStatus === 'arrived') {
+                    badgeText = 'AT COLLECTION'; badgeBg = 'var(--accent-purple)';
+                    contentHtml = `
+                        <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; background: var(--app-bg); padding: 12px; border-radius: 8px;">
+                            <b style="color: var(--accent-purple);">📍 COLLECTION DETAILS:</b><br>
+                            ${fullCollAddress}<br><br>
+                            <b style="color: var(--text-primary); font-size: 16px;">Reference: ${job.coll_ref || 'N/A'}</b>
+                        </div>
+                    `;
+                    btnHtml = `<button class="btn" style="background:var(--accent-purple); margin-top:10px;" onclick="markLoaded('${job.id}')">📦 Loaded</button>`;
+
+                } else if (dStatus === 'loaded') {
+                    badgeText = 'ON ROUTE TO DELIVERY'; badgeBg = '#d35400';
+                    contentHtml = `
+                        <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; background: rgba(211, 84, 0, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(211, 84, 0, 0.2);">
+                            <b style="color: #d35400;">📦 DELIVERY ADDRESS:</b><br>
+                            ${fullDelAddress}<br><br>
+                            <b style="color: var(--text-primary); font-size: 16px;">Delivery Ref: ${job.del_ref || 'N/A'}</b>
+                        </div>
+                    `;
+                    btnHtml = `<button class="btn" style="background:#d35400; margin-top:10px;" onclick="markDelArrived('${job.id}')">📍 Arrived at Delivery Point</button>`;
+
+                } else if (dStatus === 'del_arrived') {
+                    badgeText = 'AT DELIVERY ADDRESS'; badgeBg = '#16a085';
+                    contentHtml = `
+                        <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; background: rgba(22, 160, 133, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(22, 160, 133, 0.2);">
+                            <b style="color: #16a085;">📦 DELIVERY DETAILS:</b><br>
+                            ${fullDelAddress}<br><br>
+                            <b style="color: var(--text-primary); font-size: 16px;">Delivery Ref: ${job.del_ref || 'N/A'}</b>
+                        </div>
+                    `;
+                    btnHtml = `<button class="btn" style="background:#16a085; margin-top:10px;" onclick="markTipped('${job.id}')">✅ Tipped</button>`;
+                    
+                } else if (dStatus === 'tipped') {
+                    badgeText = 'JOB COMPLETE - PENDING POD'; badgeBg = 'var(--text-primary)';
+                    contentHtml = `
+                        <div style="font-size: 15px; font-weight: 600; text-align: center; color: var(--accent-green); margin-bottom: 15px;">
+                            ✅ Consignment Tipped Successfully
+                        </div>
+                    `;
+                    // NATIVE HTML LABEL BUTTON TRICK
+                    btnHtml = `<label for="globalCameraInput" class="btn" style="background:var(--text-primary); margin-top:10px; display:block; text-align:center; cursor:pointer;" onclick="setCameraTarget('${job.id}')">📸 Upload POD</label>`;
+                }
+
+                list.innerHTML += `
+                    <div class="job-ticket">
+                        <div class="job-status-pill" style="background:${badgeBg};">${badgeText}</div>
+                        ${contentHtml}
+                        ${btnHtml}
+                    </div>
+                `;
+            });
+        }
+
+        async function getGPS() { try { const cap = window.Capacitor || window.capacitor; if (cap && cap.Plugins.Geolocation) { const pos = await cap.Plugins.Geolocation.getCurrentPosition({ timeout: 10000 }); return `${pos.coords.latitude},${pos.coords.longitude}`; } } catch(e) {} return "GPS Not Available"; }
+        async function acknowledgeJob(jobId) { try { await _supabase.from('quotes').update({ dispatch_status: 'acknowledged', ack_timestamp: new Date().toISOString() }).eq('id', jobId); stopAlarm(); fetchActiveJobs(); } catch(e) { alert("Error: " + e.message); } }
+        async function markArrived(jobId) { if(!confirm("Confirm you have arrived at the COLLECTION address?")) return; try { const gps = await getGPS(); await _supabase.from('quotes').update({ dispatch_status: 'arrived', arrived_timestamp: new Date().toISOString(), arrived_gps: gps }).eq('id', jobId); fetchActiveJobs(); } catch(e) { alert("Error: " + e.message); } }
+        async function markLoaded(jobId) { if(!confirm("Confirm you are loaded and leaving collection?")) return; try { await _supabase.from('quotes').update({ dispatch_status: 'loaded', loaded_timestamp: new Date().toISOString() }).eq('id', jobId); fetchActiveJobs(); } catch(e) { alert("Error: " + e.message); } }
+        async function markDelArrived(jobId) { if(!confirm("Confirm you have arrived at the DELIVERY address?")) return; try { await _supabase.from('quotes').update({ dispatch_status: 'del_arrived', del_arrived_timestamp: new Date().toISOString() }).eq('id', jobId); fetchActiveJobs(); } catch(e) { alert("Error: " + e.message); } }
+        async function markTipped(jobId) { if(!confirm("Confirm you have TIPPED and finished this job?")) return; try { await _supabase.from('quotes').update({ dispatch_status: 'tipped', tipped_timestamp: new Date().toISOString() }).eq('id', jobId); fetchActiveJobs(); } catch(e) { alert("Error: " + e.message); } }
+        
+        // --- FOOLPROOF HTML5 CAMERA & UPLOAD SYSTEM ---
+        let currentPhotoTarget = null; // Can be a jobId string, or 'v' (vehicle defect), or 't' (trailer defect)
+
+        function setCameraTarget(target) {
+            currentPhotoTarget = target;
+        }
+
+        document.getElementById('globalCameraInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentPhotoTarget) return;
+
+            try {
+                const compressedBlob = await compressImage(file);
+
+                if (currentPhotoTarget === 'v' || currentPhotoTarget === 't') {
+                    // DEFECT PHOTO UPLOAD
+                    document.getElementById(`${currentPhotoTarget}PhotoStatus`).innerText = "⏳ Uploading photo...";
+                    const fileName = `defect_${currentPhotoTarget}_${Date.now()}.jpg`;
+                    
+                    const { error } = await _supabase.storage.from('defects').upload(fileName, compressedBlob, { contentType: 'image/jpeg' });
+                    if (error) throw error;
+                    
+                    const { data: publicUrlData } = _supabase.storage.from('defects').getPublicUrl(fileName);
+                    
+                    if (currentPhotoTarget === 'v') vDefectPhotoUrl = publicUrlData.publicUrl;
+                    if (currentPhotoTarget === 't') tDefectPhotoUrl = publicUrlData.publicUrl;
+                    
+                    document.getElementById(`${currentPhotoTarget}PhotoStatus`).innerText = "✅ Defect Photo Attached";
+
+                } else {
+                    // POD PHOTO UPLOAD
+                    alert("📸 Photo captured! Optimizing and uploading to dispatch...");
+                    const fileName = `job_${currentPhotoTarget}_${Date.now()}.jpg`;
+
+                    const { error } = await _supabase.storage.from('pods').upload(fileName, compressedBlob, { contentType: 'image/jpeg' });
+                    if (error) throw error;
+
+                    const { data: publicUrlData } = _supabase.storage.from('pods').getPublicUrl(fileName);
+
+                    const { error: dbError } = await _supabase.from('quotes').update({ 
+                        dispatch_status: 'completed', pod_url: publicUrlData.publicUrl, tipped_timestamp: new Date().toISOString()
+                    }).eq('id', currentPhotoTarget);
+                    if (dbError) throw dbError;
+
+                    alert("✅ POD Uploaded! Job completely finished.");
+                    fetchActiveJobs(true);
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Error: " + error.message);
+                if (currentPhotoTarget === 'v' || currentPhotoTarget === 't') {
+                    document.getElementById(`${currentPhotoTarget}PhotoStatus`).innerText = "❌ Upload Failed";
+                }
+            } finally {
+                e.target.value = ''; 
+                currentPhotoTarget = null;
+            }
+        });
+
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1200; const MAX_HEIGHT = 1200;
+                        let width = img.width; let height = img.height;
+
+                        if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        else if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.7);
+                    };
+                    img.onerror = (err) => reject(err);
+                };
+                reader.onerror = (err) => reject(err);
+            });
+        }
+
+        async function fetchBroadcasts() {
+            try {
+                const { data, error } = await _supabase.from('fleet_broadcasts').select('*').order('created_at', { ascending: false }).limit(1);
+                if (error || !data || data.length === 0) return;
+                const latestMsg = data[0]; const lastSeenTimestamp = localStorage.getItem("lastBroadcastSeen");
+                if (latestMsg.created_at !== lastSeenTimestamp) {
+                    if (lastSeenTimestamp !== null) {
+                        fireNativeNotification("⚠️ FLEET ALERT", latestMsg.message);
+                        document.getElementById('broadcastText').innerText = latestMsg.message; document.getElementById('broadcastModal').style.display = 'flex';
+                        startAlarm(); broadcastAlarmTimeout = setTimeout(() => { stopAlarm(); fetchActiveJobs(false); }, 30000);
+                    }
+                    localStorage.setItem("lastBroadcastSeen", latestMsg.created_at);
+                }
+            } catch (e) {}
+        }
+        function closeBroadcast() { document.getElementById('broadcastModal').style.display = 'none'; if (broadcastAlarmTimeout) { clearTimeout(broadcastAlarmTimeout); broadcastAlarmTimeout = null; } stopAlarm(); fetchActiveJobs(false); }
+
+        function getFormattedNames(userStr) {
+            const parts = userStr.trim().split(' ');
+            const first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+            const sur = parts.length > 1 ? parts.slice(1).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : "";
+            const full = sur ? first + ' ' + sur : first;
+            return { first, sur, full };
+        }
 
         function toggleForm(id) {
-            const f = document.getElementById(id);
-            f.style.display = f.style.display === "none" ? "block" : "none";
+            const f = document.getElementById(id); f.style.display = f.style.display === "none" ? "block" : "none";
+            if(f.style.display === "block") { if(id === 'vehicleCheckForm') initChecklist('vehicleDefectList', vehicleItems, 'v'); if(id === 'trailerCheckForm') initChecklist('trailerDefectList', trailerItems, 't'); }
+        }
+
+        async function toggleHoliday() {
+            const f = document.getElementById('holidayForm'); f.style.display = f.style.display === "none" ? "block" : "none";
             if(f.style.display === "block") {
-                if(id === 'vehicleCheckForm') initChecklist('vehicleDefectList', vehicleItems, 'v');
-                if(id === 'trailerCheckForm') initChecklist('trailerDefectList', trailerItems, 't');
+                const user = localStorage.getItem("frostUserName"); const container = document.getElementById('holidayDataContent'); container.innerHTML = "Loading...";
+                try {
+                    const names = getFormattedNames(user); const { data, error } = await _supabase.from('holiday_entitlements').select('total_entitlement, used_days, remaining_days').ilike('full_name', '%' + names.full + '%').limit(1);
+                    if (data && data.length > 0) {
+                        const h = data[0];
+                        container.innerHTML = `<div style="display: flex; justify-content: space-between; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); text-align: center;">
+                                <div><div style="font-size: 24px; font-weight: 700; color: var(--text-primary);">${h.total_entitlement}</div><div style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-top:4px; font-weight: 600;">Total</div></div>
+                                <div><div style="font-size: 24px; font-weight: 700; color: var(--accent-orange);">${h.used_days}</div><div style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-top:4px; font-weight: 600;">Used</div></div>
+                                <div><div style="font-size: 24px; font-weight: 700; color: var(--accent-green);">${h.remaining_days}</div><div style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-top:4px; font-weight: 600;">Left</div></div>
+                            </div>`;
+                    } else { container.innerHTML = "No holiday data found for: " + names.full; }
+                } catch (e) { container.innerHTML = "Error loading data."; }
             }
+        }
+
+        async function toggleHolidayRequestForm() {
+            const f = document.getElementById('holidayRequestForm'); f.style.display = f.style.display === "none" ? "block" : "none";
+            if(f.style.display === "block") checkHolidayStatus();
+        }
+
+        async function checkHolidayStatus() {
+            const user = localStorage.getItem("frostUserName"); const names = getFormattedNames(user); const box = document.getElementById('holidayStatusBox');
+            try {
+                const { data, error } = await _supabase.from('holiday_requests').select('status, denial_reason, start_date, end_date').eq('first_name', names.first).eq('surname', names.sur).order('created_at', { ascending: false }).limit(10);
+                if (data && data.length > 0) {
+                    box.style.display = 'flex'; box.innerHTML = ''; 
+                    data.forEach(req => {
+                        const s = req.status.toLowerCase(); let htmlText = ''; let color = ''; let border = '';
+                        if(s === 'pending') { htmlText = `⏳ Pending Request: ${req.start_date} to ${req.end_date}`; color = "var(--accent-orange)"; border = "1px solid rgba(255,149,0,0.3)"; } 
+                        else if (s === 'approved') { htmlText = `✅ Approved: ${req.start_date} to ${req.end_date}`; color = "var(--accent-green)"; border = "1px solid rgba(52,199,89,0.3)"; } 
+                        else if (s === 'denied') { htmlText = `❌ Denied: ${req.start_date} to ${req.end_date}<br><span style="color:var(--text-secondary); font-size:11px; margin-top:5px; display:block;">Reason: ${req.denial_reason || 'No reason provided'}</span>`; color = "var(--accent-red)"; border = "1px solid rgba(255,59,48,0.3)"; } 
+                        else { htmlText = `Status: ${req.status} (${req.start_date} to ${req.end_date})`; color = "var(--text-primary)"; border = "1px solid var(--border-color)"; }
+                        box.innerHTML += `<div style="padding: 12px; border-radius: 10px; background: #fff; text-align: center; font-size: 13px; font-weight: 600; color: ${color}; border: ${border};">${htmlText}</div>`;
+                    });
+                } else { box.style.display = 'none'; }
+            } catch (e) {}
+        }
+
+        async function submitHolidayRequest() {
+            const start = document.getElementById('holStartDate').value; const end = document.getElementById('holEndDate').value; const days = document.getElementById('holDays').value;
+            if(!start || !end || !days) return alert("Please fill all holiday fields.");
+            const user = localStorage.getItem("frostUserName"); const names = getFormattedNames(user);
+            try {
+                const { error } = await _supabase.from('holiday_requests').insert([{ first_name: names.first, surname: names.sur, start_date: start, end_date: end, days_requested: parseInt(days), status: 'pending' }]);
+                alert("✅ Holiday Request Submitted Successfully"); document.getElementById('holStartDate').value = ""; document.getElementById('holEndDate').value = ""; document.getElementById('holDays').value = ""; checkHolidayStatus(); 
+            } catch (e) { alert("Database Error: " + e.message); }
         }
 
         function initChecklist(id, items, prefix) {
             const container = document.getElementById(id); container.innerHTML = "";
-            items.forEach((item, i) => {
-                container.innerHTML += `<div class="defect-item"><span>${item}</span><div>
-                    <button class="toggle-btn active-ok" id="${prefix}-ok-${i}" onclick="setTog('${prefix}', ${i}, 'OK')">OK</button>
-                    <button class="toggle-btn" id="${prefix}-fail-${i}" onclick="setTog('${prefix}', ${i}, 'FAIL')">FAIL</button>
-                </div></div>`;
-            });
+            items.forEach((item, i) => { container.innerHTML += `<div class="defect-item"><span>${item}</span><div><button class="toggle-btn active-ok" id="${prefix}-ok-${i}" onclick="setTog('${prefix}', ${i}, 'OK')">OK</button><button class="toggle-btn" id="${prefix}-fail-${i}" onclick="setTog('${prefix}', ${i}, 'FAIL')">FAIL</button></div></div>`; });
         }
 
-        function setTog(prefix, i, s) {
-            const ok = document.getElementById(`${prefix}-ok-${i}`), fail = document.getElementById(`${prefix}-fail-${i}`);
-            ok.className = s === 'OK' ? 'toggle-btn active-ok' : 'toggle-btn';
-            fail.className = s === 'FAIL' ? 'toggle-btn active-fail' : 'toggle-btn';
+        function setTog(prefix, i, s) { 
+            const ok = document.getElementById(`${prefix}-ok-${i}`); const fail = document.getElementById(`${prefix}-fail-${i}`); 
+            ok.className = s === 'OK' ? 'toggle-btn active-ok' : 'toggle-btn'; fail.className = s === 'FAIL' ? 'toggle-btn active-fail' : 'toggle-btn'; 
+            
+            let hasFails = false;
+            const items = prefix === 'v' ? vehicleItems : trailerItems;
+            items.forEach((_, idx) => { if(document.getElementById(`${prefix}-fail-${idx}`).classList.contains('active-fail')) hasFails = true; });
+            const photoBtn = document.getElementById(`${prefix}PhotoBtn`);
+            if(photoBtn) photoBtn.style.display = hasFails ? 'block' : 'none';
         }
 
         async function logShift(action, noteText = null) {
-            const user = localStorage.getItem("frostUserName");
-            if (!user) return;
-            if (action !== 'NOTE' && !confirm(`Confirm ${action}?`)) return;
+            const user = localStorage.getItem("frostUserName"); if (!user) return; if (action !== 'NOTE' && !confirm(`Confirm ${action}?`)) return;
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 try {
-                    await _supabase.from('fleet_logs').insert([{ 
-                        driver_name: user, action_type: action, coordinates: pos.coords.latitude + "," + pos.coords.longitude, notes_text: noteText 
-                    }]);
-                    if (action === 'START') { localStorage.setItem("shiftStartTime", new Date().getTime()); startTimer(); }
-                    else if (action === 'END') { localStorage.removeItem("shiftStartTime"); stopTimer(); }
+                    await _supabase.from('fleet_logs').insert([{ driver_name: user, action_type: action, coordinates: pos.coords.latitude + "," + pos.coords.longitude, notes_text: noteText }]);
+                    if (action === 'START') { localStorage.setItem("shiftStartTime", new Date().getTime()); startTimer(); if (window.Capacitor && window.Capacitor.Plugins.KeepAwake) await window.Capacitor.Plugins.KeepAwake.keepAwake(); await startBackgroundTracking(); }
+                    else if (action === 'END') { localStorage.removeItem("shiftStartTime"); stopTimer(); if (window.Capacitor && window.Capacitor.Plugins.KeepAwake) await window.Capacitor.Plugins.KeepAwake.allowSleep(); await stopBackgroundTracking(); }
                     alert(`✅ ${action} Recorded`);
-                } catch (e) { alert(e.message); }
-                updateButtons();
+                } catch (e) { alert(e.message); } updateButtons();
             }, () => alert("GPS Required"), { timeout: 8000 });
         }
 
         async function openSummary() {
-            closeNav();
-            const modal = document.getElementById('summaryModal');
-            const dataDiv = document.getElementById('summaryData');
-            modal.style.display = 'block';
-            dataDiv.innerHTML = "Calculating current week...";
-
-            const user = localStorage.getItem("frostUserName");
-            
-            const now = new Date();
-            const day = now.getDay(); 
-            const diff = now.getDate() - day + (day === 0 ? -6 : 1); 
-            const monday = new Date(now.setDate(diff));
-            monday.setHours(0, 0, 0, 0);
-
+            closeNav(); const modal = document.getElementById('summaryModal'); const dataDiv = document.getElementById('summaryData');
+            modal.style.display = 'block'; dataDiv.innerHTML = "Calculating current week...";
+            const user = localStorage.getItem("frostUserName"); const now = new Date(); const day = now.getDay(); const diff = now.getDate() - day + (day === 0 ? -6 : 1); const monday = new Date(now.setDate(diff)); monday.setHours(0, 0, 0, 0);
             try {
-                const { data, error } = await _supabase
-                    .from('fleet_logs')
-                    .select('*')
-                    .eq('driver_name', user)
-                    .gt('created_at', monday.toISOString())
-                    .in('action_type', ['START', 'END', 'NIGHT OUT']) // FILTERED HERE
-                    .order('created_at', { ascending: true });
-
-                if (error) throw error;
-
-                let html = "";
-                let totalWorkMs = 0;
-                let nightOutCount = 0;
-                let lastStart = null;
-
+                const { data, error } = await _supabase.from('fleet_logs').select('*').eq('driver_name', user).gt('created_at', monday.toISOString()).in('action_type', ['START', 'END', 'NIGHT OUT']).order('created_at', { ascending: true });
+                let html = ""; let totalWorkMs = 0; let nightOutCount = 0; let lastStart = null;
                 data.forEach(log => {
                     const time = new Date(log.created_at).toLocaleString('en-GB', { weekday:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-                    
                     if (log.action_type === 'START') lastStart = new Date(log.created_at);
-                    if (log.action_type === 'END' && lastStart) {
-                        totalWorkMs += (new Date(log.created_at) - lastStart);
-                        lastStart = null;
-                    }
+                    if (log.action_type === 'END' && lastStart) { totalWorkMs += (new Date(log.created_at) - lastStart); lastStart = null; }
                     if (log.action_type === 'NIGHT OUT') nightOutCount++;
-
-                    html += `<div class="summary-row">
-                                <span>${time}</span>
-                                <span style="color:${log.action_type === 'START' ? '#27ae60' : log.action_type === 'END' ? '#e74c3c' : '#3498db'}">
-                                    ${log.action_type}
-                                </span>
-                             </div>`;
+                    html += `<div class="summary-row"><span>${time}</span><span style="color:${log.action_type === 'START' ? 'var(--accent-green)' : log.action_type === 'END' ? 'var(--accent-red)' : 'var(--accent-blue)'}; font-weight: 700;">${log.action_type}</span></div>`;
                 });
-
-                const h = Math.floor(totalWorkMs / 3600000);
-                const m = Math.floor((totalWorkMs % 3600000) / 60000);
-
-                dataDiv.innerHTML = `
-                    <div style="background:#000; padding:15px; border-radius:8px; margin-bottom:15px; text-align:center;">
-                        <h1 style="margin:0; color:var(--warning-yellow);">${h}h ${m}m</h1>
-                        <p style="margin:5px 0 0 0; font-size:12px;">TOTAL WORK SINCE MON</p>
-                        <h3 style="margin:10px 0 0 0; color:#3498db;">🌙 ${nightOutCount} Nights Out</h3>
-                    </div>
-                    ${html || "<p>No logs found for this week.</p>"}
-                `;
-            } catch (e) {
-                dataDiv.innerHTML = "Error loading data: " + e.message;
-            }
+                const h = Math.floor(totalWorkMs / 3600000); const m = Math.floor((totalWorkMs % 3600000) / 60000);
+                dataDiv.innerHTML = `<div style="background:var(--app-bg); border-radius:16px; padding:20px; text-align:center; margin-bottom: 20px;"><h1 style="margin:0; color:var(--accent-blue); font-size: 36px; letter-spacing: -1px;">${h}h ${m}m</h1><p style="margin:4px 0 0 0; font-size:11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Total Work Since Mon</p><div style="margin-top: 12px; display: inline-block; background: #fff; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">🌙 ${nightOutCount} Nights Out</div></div><div style="max-height: 250px; overflow-y: auto; padding-right: 5px;">${html || "<p style='color: var(--text-secondary); text-align: center; font-size: 14px;'>No logs found for this week.</p>"}</div>`;
+            } catch (e) { dataDiv.innerHTML = "Error loading data."; }
         }
-
         function closeSummary() { document.getElementById('summaryModal').style.display = 'none'; }
 
         async function submitVehicleCheck() {
-            const reg = document.getElementById('regNo').value;
-            const miles = document.getElementById('mileage').value;
-            if(!reg || !miles) return alert("Missing Reg or Mileage.");
-            let fails = [];
-            vehicleItems.forEach((item, i) => { if(document.getElementById(`v-fail-${i}`).classList.contains('active-fail')) fails.push(item); });
-            try {
-                await _supabase.from('daily_vehicle_checks').insert([{ 
-                    driver_name: localStorage.getItem("frostUserName"), registration: reg, mileage: parseInt(miles),
-                    condition_status: fails.length > 0 ? "DEFECTS" : "NIL DEFECTS",
-                    defect_details: (fails.length > 0 ? "FAILS: " + fails.join(", ") : "NIL") + " | " + document.getElementById('checkNotes').value
-                }]);
-                alert("✅ Submitted"); toggleForm('vehicleCheckForm');
-            } catch (e) { alert("Database Error: " + e.message); }
+            const reg = document.getElementById('regNo').value; const miles = document.getElementById('mileage').value; const notes = document.getElementById('checkNotes').value.trim();
+            if(!reg || !miles) return alert("Missing Reg or Mileage."); 
+            let fails = []; vehicleItems.forEach((item, i) => { if(document.getElementById(`v-fail-${i}`).classList.contains('active-fail')) fails.push(item); });
+            if(fails.length > 0 && notes === '') return alert("Fail Details / Notes are mandatory when a defect is recorded.");
+            try { 
+                await _supabase.from('daily_vehicle_checks').insert([{ driver_name: localStorage.getItem("frostUserName"), registration: reg, mileage: parseInt(miles), condition_status: fails.length > 0 ? "DEFECTS" : "NIL DEFECTS", defect_details: (fails.length > 0 ? "FAILS: " + fails.join(", ") : "NIL") + " | " + notes, defect_photo_url: vDefectPhotoUrl }]); 
+                alert("✅ Submitted"); vDefectPhotoUrl = null; document.getElementById('vPhotoStatus').innerText = ""; toggleForm('vehicleCheckForm'); 
+            } catch (e) {}
         }
 
         async function submitTrailerCheck() {
-            const trailer = document.getElementById('trailerNo').value;
-            if(!trailer) return alert("Select trailer.");
-            let fails = [];
-            trailerItems.forEach((item, i) => { if(document.getElementById(`t-fail-${i}`).classList.contains('active-fail')) fails.push(item); });
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                try {
-                    await _supabase.from('daily_trailer_checks').insert([{ 
-                        driver_name: localStorage.getItem("frostUserName"), trailer_number: trailer, 
-                        location: pos.coords.latitude + "," + pos.coords.longitude,
-                        notes: document.getElementById('trailerNotes').value,
-                        condition_status: fails.length > 0 ? "DEFECTS" : "NIL DEFECTS",
-                        defect_details: fails.length > 0 ? "FAILS: " + fails.join(", ") : "NIL"
-                    }]);
-                    alert("✅ Saved"); toggleForm('trailerCheckForm');
-                } catch (e) { alert(e.message); }
+            const trailer = document.getElementById('trailerNo').value; const notes = document.getElementById('trailerNotes').value.trim();
+            if(!trailer) return alert("Select trailer."); 
+            let fails = []; trailerItems.forEach((item, i) => { if(document.getElementById(`t-fail-${i}`).classList.contains('active-fail')) fails.push(item); });
+            if(fails.length > 0 && notes === '') return alert("Fail Details / Notes are mandatory when a defect is recorded.");
+            navigator.geolocation.getCurrentPosition(async (pos) => { 
+                try { 
+                    await _supabase.from('daily_trailer_checks').insert([{ driver_name: localStorage.getItem("frostUserName"), trailer_number: trailer, location: pos.coords.latitude + "," + pos.coords.longitude, notes: notes, condition_status: fails.length > 0 ? "DEFECTS" : "NIL DEFECTS", defect_details: fails.length > 0 ? "FAILS: " + fails.join(", ") : "NIL", defect_photo_url: tDefectPhotoUrl }]); 
+                    alert("✅ Saved"); tDefectPhotoUrl = null; document.getElementById('tPhotoStatus').innerText = ""; toggleForm('trailerCheckForm'); 
+                } catch (e) {} 
             });
         }
 
         async function submitFuel() {
-            const reg = document.getElementById('fuelRegNo').value;
-            const card = document.getElementById('fuelCardUsed').value;
-            const lit = document.getElementById('fuelLitres').value;
-            const prc = document.getElementById('fuelPrice').value;
-            
+            const reg = document.getElementById('fuelRegNo').value; const card = document.getElementById('fuelCardUsed').value; const lit = document.getElementById('fuelLitres').value; const prc = document.getElementById('fuelPrice').value;
             if(!reg || !card || !lit || !prc) return alert("Fill all fields.");
-            
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                try {
-                    await _supabase.from('fuel_logs').insert([{ 
-                        driver_name: localStorage.getItem("frostUserName"), vehicle_reg: reg, 
-                        fuel_card: card,
-                        litres: parseFloat(lit), price: parseFloat(prc),
-                        coordinates: pos.coords.latitude + "," + pos.coords.longitude
-                    }]);
-                    alert("✅ Fuel Saved"); toggleForm('fuelForm');
-                } catch (e) { alert(e.message); }
-            });
+            navigator.geolocation.getCurrentPosition(async (pos) => { try { await _supabase.from('fuel_logs').insert([{ driver_name: localStorage.getItem("frostUserName"), vehicle_reg: reg, fuel_card: card, litres: parseFloat(lit), price: parseFloat(prc), coordinates: pos.coords.latitude + "," + pos.coords.longitude }]); alert("✅ Fuel Saved"); toggleForm('fuelForm'); } catch (e) {} });
         }
-
         async function submitNote() { const t = document.getElementById('shiftNotesInput').value; if(t) await logShift('NOTE', t); document.getElementById('shiftNotesInput').value=""; }
 
-        function checkLogin() {
-            const u = document.getElementById('username').value.toLowerCase().trim();
-            const p = document.getElementById('password').value.trim();
-            if (validUsers[u] === p) {
-                localStorage.setItem("frostLoggedIn", "true"); localStorage.setItem("frostUserName", u);
-                showDash(u);
-            } else { document.getElementById('errorMsg').style.display = "block"; }
-        }
+        function checkLogin() { const u = document.getElementById('username').value.toLowerCase().trim(); const p = document.getElementById('password').value.trim(); if (validUsers[u] === p) { localStorage.setItem("frostLoggedIn", "true"); localStorage.setItem("frostUserName", u); initAudio(); showDash(u); } else { document.getElementById('errorMsg').style.display = "block"; } }
 
-        function showDash(u) {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('appContent').style.display = 'flex';
-            document.getElementById('welcomeUser').innerText = "Driver: " + u;
+        async function showDash(u) {
+            document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('appContent').style.display = 'flex';
+            const names = getFormattedNames(u); document.getElementById('welcomeUser').innerText = "Logged in as: " + names.full;
             const f = (id, l) => { const e = document.getElementById(id); e.innerHTML = '<option value="">--Select--</option>'; l.forEach(v => e.innerHTML += `<option value="${v}">${v}</option>`); };
             f('regNo', fleetVehicles); f('fuelRegNo', fleetVehicles); f('trailerNo', fleetTrailers);
-            if (localStorage.getItem("shiftStartTime")) startTimer(); else updateButtons();
+            
+            initAudio(); const cap = window.Capacitor || window.capacitor;
+            if (cap && cap.Plugins.LocalNotifications) { try { let perm = await cap.Plugins.LocalNotifications.checkPermissions(); if (perm.display !== 'granted') await cap.Plugins.LocalNotifications.requestPermissions(); await setupNotificationChannel(); } catch(e) {} }
+            setupFirebasePush();
+
+            if (localStorage.getItem("shiftStartTime")) { startTimer(); startBackgroundTracking(); if (window.Capacitor && window.Capacitor.Plugins.KeepAwake) await window.Capacitor.Plugins.KeepAwake.keepAwake(); } else { updateButtons(); }
+
+            fetchActiveJobs(false); fetchBroadcasts(); 
+            if (backgroundJobTimer) clearInterval(backgroundJobTimer); backgroundJobTimer = setInterval(() => { if (localStorage.getItem("shiftStartTime")) { fetchActiveJobs(false); fetchBroadcasts(); } }, 30000);
+
+            if (holidayChannel) _supabase.removeChannel(holidayChannel);
+            holidayChannel = _supabase.channel('custom-holiday-channel').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'holiday_requests', filter: `first_name=eq.${names.first}` }, (payload) => {
+                checkHolidayStatus(); if(payload.new && payload.new.status && payload.new.surname === names.sur) { const newStatus = payload.new.status.toLowerCase(); if(newStatus === 'approved') alert('✅ Update: Your holiday request was APPROVED!'); if(newStatus === 'denied') alert('❌ Update: Your holiday request was DENIED. Reason: ' + (payload.new.denial_reason || 'None')); }
+            }).subscribe();
         }
 
-        function startTimer() {
-            document.getElementById('shiftReminder').style.display = "block"; updateButtons();
-            if(timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const diff = new Date().getTime() - localStorage.getItem("shiftStartTime");
-                const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
-                document.getElementById('shiftDuration').innerText = `${h}h ${m}m`;
-            }, 1000);
-        }
-
+        function startTimer() { document.getElementById('shiftReminder').style.display = "block"; updateButtons(); if(timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { const diff = new Date().getTime() - localStorage.getItem("shiftStartTime"); const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000); document.getElementById('shiftDuration').innerText = `${h}h ${m}m`; }, 1000); }
         function stopTimer() { clearInterval(timerInterval); document.getElementById('shiftReminder').style.display = "none"; updateButtons(); }
-        
-        function updateButtons() {
-            const active = !!localStorage.getItem("shiftStartTime");
-            document.getElementById('startBtn').disabled = active;
-            document.getElementById('endBtn').disabled = !active;
-            document.getElementById('nightBtn').disabled = !active;
-        }
-
+        function updateButtons() { const active = !!localStorage.getItem("shiftStartTime"); document.getElementById('startBtn').disabled = active; document.getElementById('endBtn').disabled = !active; document.getElementById('nightBtn').disabled = !active; }
         function logout() { localStorage.clear(); location.reload(); }
-        function openNav() { document.getElementById("sideMenu").style.width = "270px"; }
+        function openNav() { document.getElementById("sideMenu").style.width = "250px"; }
         function closeNav() { document.getElementById("sideMenu").style.width = "0"; }
         window.onload = () => { if(localStorage.getItem("frostLoggedIn")) showDash(localStorage.getItem("frostUserName")); };
     </script>
