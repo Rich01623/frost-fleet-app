@@ -120,7 +120,7 @@
 </head>
 <body>
 
-    <input type="file" id="globalCameraInput" accept="image/*" capture="environment" style="position: absolute; left: -9999px; width: 1px; height: 1px;">
+    <input type="file" id="globalCameraInput" accept="image/*" capture="environment" style="position: fixed; top: -100px; left: -100px; width: 1px; height: 1px; opacity: 0; z-index: -1;">
 
     <div id="jobOverlay">
         <div class="job-overlay-header">
@@ -231,7 +231,7 @@
                     <span class="form-label">Fail Details / Notes (Required for fails)</span>
                     <textarea id="checkNotes" class="notes-input" placeholder="Explain any fails..." rows="2"></textarea>
                     
-                    <label for="globalCameraInput" id="vPhotoBtn" class="btn btn-orange" style="display:none; margin-top: 10px; text-align:center; cursor:pointer;" onclick="setCameraTarget('v')">📸 Upload Defect Photo</label>
+                    <button type="button" id="vPhotoBtn" class="btn btn-orange" style="display:none; margin-top: 10px; text-align:center; cursor:pointer;" onclick="openCameraFor('v')">📸 Upload Defect Photo</button>
                     <div id="vPhotoStatus" style="font-size: 13px; font-weight: 600; color: var(--accent-green); margin-top: 8px; text-align: center;"></div>
                     
                     <button id="saveCheckBtn" class="btn btn-dark" onclick="submitVehicleCheck()" style="margin-top: 15px;">Submit Compliance</button>
@@ -257,7 +257,7 @@
                     <span class="form-label">Fail Details / Notes (Required for fails)</span>
                     <textarea id="trailerNotes" class="notes-input" placeholder="Explain any fails..." rows="2"></textarea>
 
-                    <label for="globalCameraInput" id="tPhotoBtn" class="btn btn-orange" style="display:none; margin-top: 10px; text-align:center; cursor:pointer;" onclick="setCameraTarget('t')">📸 Upload Defect Photo</label>
+                    <button type="button" id="tPhotoBtn" class="btn btn-orange" style="display:none; margin-top: 10px; text-align:center; cursor:pointer;" onclick="openCameraFor('t')">📸 Upload Defect Photo</button>
                     <div id="tPhotoStatus" style="font-size: 13px; font-weight: 600; color: var(--accent-green); margin-top: 8px; text-align: center;"></div>
 
                     <button id="saveTrailerBtn" class="btn btn-dark" onclick="submitTrailerCheck()" style="margin-top: 15px;">Submit Trailer Data</button>
@@ -576,7 +576,7 @@
                         </div>
                     `;
                     // NATIVE HTML LABEL BUTTON TRICK
-                    btnHtml = `<label for="globalCameraInput" class="btn" style="background:var(--text-primary); margin-top:10px; display:block; text-align:center; cursor:pointer;" onclick="setCameraTarget('${job.id}')">📸 Upload POD</label>`;
+                    btnHtml = `<button type="button" class="btn" style="background:var(--text-primary); margin-top:10px; display:block; text-align:center; cursor:pointer;" onclick="openCameraFor('${job.id}')">📸 Upload POD</button>`;
                 }
 
                 list.innerHTML += `
@@ -594,67 +594,288 @@
         async function markArrived(jobId) { if(!confirm("Confirm you have arrived at the COLLECTION address?")) return; try { const gps = await getGPS(); await _supabase.from('quotes').update({ dispatch_status: 'arrived', arrived_timestamp: new Date().toISOString(), arrived_gps: gps }).eq('id', jobId); fetchActiveJobs(); } catch(e) { alert("Error: " + e.message); } }
         async function markLoaded(jobId) { if(!confirm("Confirm you are loaded and leaving collection?")) return; try { await _supabase.from('quotes').update({ dispatch_status: 'loaded', loaded_timestamp: new Date().toISOString() }).eq('id', jobId); fetchActiveJobs(); } catch(e) { alert("Error: " + e.message); } }
         async function markDelArrived(jobId) { if(!confirm("Confirm you have arrived at the DELIVERY address?")) return; try { await _supabase.from('quotes').update({ dispatch_status: 'del_arrived', del_arrived_timestamp: new Date().toISOString() }).eq('id', jobId); fetchActiveJobs(); } catch(e) { alert("Error: " + e.message); } }
-        async function markTipped(jobId) { if(!confirm("Confirm you have TIPPED and finished this job?")) return; try { await _supabase.from('quotes').update({ dispatch_status: 'tipped', tipped_timestamp: new Date().toISOString() }).eq('id', jobId); fetchActiveJobs(); } catch(e) { alert("Error: " + e.message); } }
-        
-        // --- FOOLPROOF HTML5 CAMERA & UPLOAD SYSTEM ---
-        let currentPhotoTarget = null; // Can be a jobId string, or 'v' (vehicle defect), or 't' (trailer defect)
+        async function markTipped(jobId) {
+            if (!confirm("Confirm you have TIPPED and finished this job?")) return;
+
+            try {
+                const gps = await getGPS();
+
+                const { data, error } = await _supabase
+                    .from('quotes')
+                    .update({
+                        dispatch_status: 'tipped',
+                        tipped_timestamp: new Date().toISOString(),
+                        tipped_gps: gps
+                    })
+                    .eq('id', jobId)
+                    .select('id, dispatch_status, tipped_timestamp, tipped_gps')
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (!data) {
+                    throw new Error(
+                        'Tipped status was not saved because no matching quotes row was found. ' +
+                        'Check that the job id matches quotes.id and that your Supabase update policy allows this app to update quotes.'
+                    );
+                }
+
+                fetchActiveJobs();
+            } catch (e) {
+                alert("Error saving tipped GPS: " + (e.message || e));
+            }
+        }
+        // --- RELIABLE CAMERA & UPLOAD SYSTEM ---
+        // The old version used a <label for="globalCameraInput"> to trigger the hidden file input.
+        // That can fail inside mobile WebView / Capacitor. This version uses a real button and
+        // calls input.click() directly from the user's tap. If the Capacitor Camera plugin exists,
+        // it uses the native camera first and falls back to the normal HTML file input.
+        let currentPhotoTarget = null; // jobId string, 'v' for vehicle defect, or 't' for trailer defect
 
         function setCameraTarget(target) {
+            // Kept so old buttons still work if anything cached calls this.
             currentPhotoTarget = target;
         }
 
+        async function openCameraFor(target) {
+            currentPhotoTarget = target;
+
+            const input = document.getElementById('globalCameraInput');
+            if (input) input.value = '';
+
+            const cap = window.Capacitor || window.capacitor;
+            const isNativeApp = !!(cap && (
+                (typeof cap.isNativePlatform === 'function' && cap.isNativePlatform()) ||
+                (typeof cap.getPlatform === 'function' && cap.getPlatform() !== 'web')
+            ));
+
+            const Camera = cap && cap.Plugins ? cap.Plugins.Camera : null;
+
+            // Installed app path: use the real native Capacitor Camera plugin.
+            // Do NOT silently fall back to the file picker inside the app, because that is exactly
+            // the problem we are trying to avoid.
+            if (Camera) {
+                try {
+                    let photoBlob = null;
+
+                    // Capacitor v8+ native media API. This opens the camera directly.
+                    if (typeof Camera.takePhoto === 'function') {
+                        const result = await Camera.takePhoto({
+                            quality: 75,
+                            includeMetadata: false,
+                            saveToGallery: false
+                        });
+                        photoBlob = await capacitorPhotoResultToBlob(result);
+                    }
+
+                    // Capacitor v1-v7 camera API. Force camera, not gallery/prompt.
+                    if (!photoBlob && typeof Camera.getPhoto === 'function') {
+                        const photo = await Camera.getPhoto({
+                            quality: 75,
+                            allowEditing: false,
+                            resultType: 'base64',
+                            source: 'CAMERA',
+                            direction: 'REAR',
+                            correctOrientation: true,
+                            saveToGallery: false
+                        });
+                        photoBlob = await capacitorPhotoResultToBlob(photo);
+                    }
+
+                    if (!photoBlob) {
+                        throw new Error('The Camera plugin returned no image data.');
+                    }
+
+                    await processSelectedPhoto(photoBlob);
+                    currentPhotoTarget = null;
+                    return;
+                } catch (err) {
+                    const msg = (err && (err.message || err.toString())) || '';
+                    currentPhotoTarget = null;
+
+                    // User cancelled the camera.
+                    if (/cancel|cancelled|canceled|OS-PLUG-CAMR-0006/i.test(msg)) return;
+
+                    console.error('Camera/POD upload failed:', err);
+                    alert('Camera/POD upload error: ' + msg + '\n\nIf the photo was taken but quotes.pod_url is still empty, check the exact error above, your quotes RLS update policy, and that the job id matches quotes.id.');
+                    return;
+                }
+            }
+
+            // If this is the installed app and no Camera plugin is present, show the real cause.
+            // Opening the file picker here only hides the problem.
+            if (isNativeApp) {
+                currentPhotoTarget = null;
+                alert('Native Camera plugin is not available in this installed app.\n\nRun these in your app project, then rebuild/reinstall the app:\n\nnpm install @capacitor/camera\nnpx cap sync\n\nThe browser can use capture="environment", but the installed app needs the native Camera plugin to force the camera.');
+                return;
+            }
+
+            // Normal browser fallback. Chrome/Safari usually honour capture="environment" here.
+            if (input) {
+                input.click();
+            } else {
+                currentPhotoTarget = null;
+                alert('Camera input not found.');
+            }
+        }
+
+        async function capacitorPhotoResultToBlob(photo) {
+            if (!photo) return null;
+
+            // getPhoto({ resultType: 'base64' }) returns base64String.
+            if (photo.base64String) {
+                const type = photo.format ? `image/${photo.format}` : 'image/jpeg';
+                return base64ToBlob(photo.base64String, type);
+            }
+
+            // Some Capacitor APIs return thumbnail as base64 or a data URL.
+            if (photo.thumbnail) {
+                if (photo.thumbnail.startsWith('data:')) return dataUrlToBlob(photo.thumbnail);
+                return base64ToBlob(photo.thumbnail, 'image/jpeg');
+            }
+
+            // Data URL result support.
+            if (photo.dataUrl) {
+                return dataUrlToBlob(photo.dataUrl);
+            }
+
+            // URI/webPath fallback.
+            const uri = photo.webPath || photo.uri || photo.path;
+            if (uri) {
+                const response = await fetch(uri);
+                if (!response.ok) throw new Error('Could not read camera image from device.');
+                return await response.blob();
+            }
+
+            return null;
+        }
+
+        function dataUrlToBlob(dataUrl) {
+            const parts = dataUrl.split(',');
+            const match = parts[0].match(/:(.*?);/);
+            const contentType = match ? match[1] : 'image/jpeg';
+            return base64ToBlob(parts[1], contentType);
+        }
+
         document.getElementById('globalCameraInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
+            const file = e.target.files && e.target.files[0];
             if (!file || !currentPhotoTarget) return;
 
             try {
-                const compressedBlob = await compressImage(file);
-
-                if (currentPhotoTarget === 'v' || currentPhotoTarget === 't') {
-                    // DEFECT PHOTO UPLOAD
-                    document.getElementById(`${currentPhotoTarget}PhotoStatus`).innerText = "⏳ Uploading photo...";
-                    const fileName = `defect_${currentPhotoTarget}_${Date.now()}.jpg`;
-                    
-                    const { error } = await _supabase.storage.from('defects').upload(fileName, compressedBlob, { contentType: 'image/jpeg' });
-                    if (error) throw error;
-                    
-                    const { data: publicUrlData } = _supabase.storage.from('defects').getPublicUrl(fileName);
-                    
-                    if (currentPhotoTarget === 'v') vDefectPhotoUrl = publicUrlData.publicUrl;
-                    if (currentPhotoTarget === 't') tDefectPhotoUrl = publicUrlData.publicUrl;
-                    
-                    document.getElementById(`${currentPhotoTarget}PhotoStatus`).innerText = "✅ Defect Photo Attached";
-
-                } else {
-                    // POD PHOTO UPLOAD
-                    alert("📸 Photo captured! Optimizing and uploading to dispatch...");
-                    const fileName = `job_${currentPhotoTarget}_${Date.now()}.jpg`;
-
-                    const { error } = await _supabase.storage.from('pods').upload(fileName, compressedBlob, { contentType: 'image/jpeg' });
-                    if (error) throw error;
-
-                    const { data: publicUrlData } = _supabase.storage.from('pods').getPublicUrl(fileName);
-
-                    const { error: dbError } = await _supabase.from('quotes').update({ 
-                        dispatch_status: 'completed', pod_url: publicUrlData.publicUrl, tipped_timestamp: new Date().toISOString()
-                    }).eq('id', currentPhotoTarget);
-                    if (dbError) throw dbError;
-
-                    alert("✅ POD Uploaded! Job completely finished.");
-                    fetchActiveJobs(true);
-                }
-
+                await processSelectedPhoto(file);
             } catch (error) {
-                console.error(error);
-                alert("Error: " + error.message);
-                if (currentPhotoTarget === 'v' || currentPhotoTarget === 't') {
-                    document.getElementById(`${currentPhotoTarget}PhotoStatus`).innerText = "❌ Upload Failed";
-                }
+                handlePhotoUploadError(error);
             } finally {
-                e.target.value = ''; 
+                e.target.value = '';
                 currentPhotoTarget = null;
             }
         });
+
+        function base64ToBlob(base64Data, contentType = 'image/jpeg') {
+            const byteCharacters = atob(base64Data);
+            const byteArrays = [];
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                byteArrays.push(new Uint8Array(byteNumbers));
+            }
+            return new Blob(byteArrays, { type: contentType });
+        }
+
+        async function processSelectedPhoto(fileOrBlob) {
+            if (!currentPhotoTarget) return;
+
+            const uploadTarget = currentPhotoTarget;
+            const compressedBlob = await compressImage(fileOrBlob);
+
+            if (uploadTarget === 'v' || uploadTarget === 't') {
+                // DEFECT PHOTO UPLOAD
+                const statusEl = document.getElementById(`${uploadTarget}PhotoStatus`);
+                if (statusEl) statusEl.innerText = '⏳ Uploading photo...';
+
+                const fileName = `defect_${uploadTarget}_${Date.now()}.jpg`;
+                const { error } = await _supabase.storage.from('defects').upload(fileName, compressedBlob, { contentType: 'image/jpeg' });
+                if (error) throw error;
+
+                const { data: publicUrlData } = _supabase.storage.from('defects').getPublicUrl(fileName);
+
+                if (uploadTarget === 'v') vDefectPhotoUrl = publicUrlData.publicUrl;
+                if (uploadTarget === 't') tDefectPhotoUrl = publicUrlData.publicUrl;
+
+                if (statusEl) statusEl.innerText = '✅ Defect Photo Attached';
+                return;
+            }
+
+            // POD PHOTO UPLOAD
+            alert('📸 Photo captured! Optimizing and uploading to dispatch...');
+            const fileName = `job_${uploadTarget}_${Date.now()}.jpg`;
+
+            const { error } = await _supabase.storage.from('pods').upload(fileName, compressedBlob, { contentType: 'image/jpeg' });
+            if (error) throw error;
+
+            const { data: publicUrlData } = _supabase.storage.from('pods').getPublicUrl(fileName);
+            const podUrl = publicUrlData && publicUrlData.publicUrl;
+
+            if (!podUrl) {
+                throw new Error('The photo uploaded, but Supabase did not return a public POD URL. Check that the pods bucket exists and is public, or change this code to use signed URLs.');
+            }
+
+            await updateQuoteWithPodUrl(uploadTarget, podUrl);
+
+            alert('✅ POD Uploaded and saved to quotes.pod_url. Job completely finished.');
+            fetchActiveJobs(true);
+        }
+
+        async function updateQuoteWithPodUrl(jobId, podUrl) {
+            const updatePayload = {
+                dispatch_status: 'completed',
+                pod_url: podUrl,
+                tipped_timestamp: new Date().toISOString()
+            };
+
+            // Important: update() on its own can look successful even when zero rows were changed.
+            // select() forces Supabase to return the updated row, so we can prove quotes.pod_url was actually saved.
+            const { data, error } = await _supabase
+                .from('quotes')
+                .update(updatePayload)
+                .eq('id', jobId)
+                .select('id, pod_url, dispatch_status')
+                .maybeSingle();
+
+            if (error) {
+                throw new Error('POD uploaded to Storage, but the quotes table update failed: ' + error.message);
+            }
+
+            if (!data) {
+                throw new Error(
+                    'POD uploaded to Storage, but no row in quotes was updated. ' +
+                    'This usually means the job id did not match quotes.id, or Supabase RLS is blocking the update. ' +
+                    'Job id used: ' + jobId + '. POD URL: ' + podUrl
+                );
+            }
+
+            if (data.pod_url !== podUrl) {
+                throw new Error(
+                    'Supabase updated a quotes row, but pod_url did not come back with the saved URL. ' +
+                    'Check the pod_url column name and table schema cache. Job id used: ' + jobId
+                );
+            }
+
+            return data;
+        }
+
+        function handlePhotoUploadError(error) {
+            console.error(error);
+            alert('Error: ' + (error && error.message ? error.message : error));
+
+            if (currentPhotoTarget === 'v' || currentPhotoTarget === 't') {
+                const statusEl = document.getElementById(`${currentPhotoTarget}PhotoStatus`);
+                if (statusEl) statusEl.innerText = '❌ Upload Failed';
+            }
+        }
 
         function compressImage(file) {
             return new Promise((resolve, reject) => {
@@ -675,7 +896,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.7);
+                        canvas.toBlob((blob) => { if (blob) resolve(blob); else reject(new Error('Image compression failed.')); }, 'image/jpeg', 0.7);
                     };
                     img.onerror = (err) => reject(err);
                 };
